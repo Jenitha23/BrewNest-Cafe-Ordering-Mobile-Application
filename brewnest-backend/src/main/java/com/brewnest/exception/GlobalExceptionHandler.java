@@ -1,4 +1,3 @@
-// exception/GlobalExceptionHandler.java
 package com.brewnest.exception;
 
 import com.brewnest.dto.response.ApiResponse;
