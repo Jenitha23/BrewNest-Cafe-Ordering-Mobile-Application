@@ -1,5 +1,5 @@
 // controller/CustomerAuthController.java
-package com.brewnest.controller;
+package com.brewnest.Controller;
 
 import com.brewnest.dto.request.CustomerLoginRequest;
 import com.brewnest.dto.request.CustomerSignupRequest;

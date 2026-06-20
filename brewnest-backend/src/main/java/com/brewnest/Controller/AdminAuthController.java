@@ -1,5 +1,5 @@
 // controller/AdminAuthController.java
-package com.brewnest.controller;
+package com.brewnest.Controller;
 
 import com.brewnest.dto.request.AdminLoginRequest;
 import com.brewnest.dto.response.AdminAuthResponse;
