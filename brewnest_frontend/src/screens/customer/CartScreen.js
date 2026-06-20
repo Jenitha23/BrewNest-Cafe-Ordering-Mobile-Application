@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
@@ -28,6 +29,30 @@ const CartScreen = ({ navigation }) => {
     Alert.alert('Next Feature', 'Checkout and order placement will be implemented next.');
   };
 
+  const handleClearCart = () => {
+    if (cartItems.length === 0) return;
+
+    Alert.alert(
+      'Clear Cart',
+      'Are you sure you want to remove all items from your cart?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: clearCart,
+        },
+      ]
+    );
+  };
+
+  const handleBrowseMenu = () => {
+    navigation.navigate('Menu');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
@@ -38,73 +63,83 @@ const CartScreen = ({ navigation }) => {
 
           <Text style={styles.title}>My Cart</Text>
 
-          <TouchableOpacity onPress={clearCart}>
-            <Icon name="trash-can-outline" size={24} color={colors.error} />
+          <TouchableOpacity onPress={handleClearCart}>
+            <Icon name="trash-can-outline" size={25} color={colors.error} />
           </TouchableOpacity>
         </View>
 
         {cartItems.length === 0 ? (
           <View style={styles.emptyBox}>
-            <Icon name="cart-outline" size={70} color={colors.textLight} />
+            <Icon name="cart-outline" size={78} color={colors.textLight} />
             <Text style={styles.emptyTitle}>Your cart is empty</Text>
             <Text style={styles.emptyText}>Add some cafe items to continue.</Text>
 
             <TouchableOpacity
               style={styles.browseButton}
-              onPress={() => navigation.navigate('Home')}
+              onPress={handleBrowseMenu}
+              activeOpacity={0.85}
             >
               <Text style={styles.browseText}>Browse Menu</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-              {cartItems.map((item) => (
-                <View key={item.id} style={styles.cartItem}>
-                  <View style={styles.imageBox}>
-                    {item.imageUrl ? (
-                      <Image source={{ uri: getImageUrl(item.imageUrl) }} style={styles.image} />
-                    ) : (
-                      <Icon name="coffee-to-go" size={36} color={colors.secondary} />
-                    )}
-                  </View>
-
-                  <View style={styles.itemContent}>
-                    <Text style={styles.itemName} numberOfLines={1}>
-                      {item.name}
-                    </Text>
-
-                    <Text style={styles.itemPrice}>
-                      Rs. {Number(item.price || 0).toFixed(0)}
-                    </Text>
-
-                    <View style={styles.quantityRow}>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => decreaseQuantity(item.id)}
-                      >
-                        <Icon name="minus" size={16} color={colors.primary} />
-                      </TouchableOpacity>
-
-                      <Text style={styles.quantity}>{item.quantity}</Text>
-
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => increaseQuantity(item.id)}
-                      >
-                        <Icon name="plus" size={16} color={colors.primary} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <TouchableOpacity onPress={() => removeFromCart(item.id)}>
-                    <Icon name="close-circle" size={23} color={colors.error} />
-                  </TouchableOpacity>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {cartItems.map((item) => (
+              <View key={item.id} style={styles.cartItem}>
+                <View style={styles.imageBox}>
+                  {item.imageUrl ? (
+                    <Image source={{ uri: getImageUrl(item.imageUrl) }} style={styles.image} />
+                  ) : (
+                    <Icon name="coffee-to-go" size={38} color={colors.secondary} />
+                  )}
                 </View>
-              ))}
-            </ScrollView>
+
+                <View style={styles.itemContent}>
+                  <Text style={styles.itemName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+
+                  <Text style={styles.itemCategory} numberOfLines={1}>
+                    {item.categoryName || 'Cafe Item'}
+                  </Text>
+
+                  <Text style={styles.itemPrice}>
+                    Rs. {Number(item.price || 0).toFixed(0)}
+                  </Text>
+
+                  <View style={styles.quantityRow}>
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => decreaseQuantity(item.id)}
+                      activeOpacity={0.8}
+                    >
+                      <Icon name="minus" size={16} color={colors.primary} />
+                    </TouchableOpacity>
+
+                    <Text style={styles.quantity}>{item.quantity}</Text>
+
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => increaseQuantity(item.id)}
+                      activeOpacity={0.8}
+                    >
+                      <Icon name="plus" size={16} color={colors.primary} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity onPress={() => removeFromCart(item.id)}>
+                  <Icon name="close-circle" size={24} color={colors.error} />
+                </TouchableOpacity>
+              </View>
+            ))}
 
             <View style={styles.summaryBox}>
+              <Text style={styles.summaryTitle}>Order Summary</Text>
+
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Subtotal</Text>
                 <Text style={styles.summaryValue}>Rs. {totalAmount.toFixed(0)}</Text>
@@ -126,7 +161,7 @@ const CartScreen = ({ navigation }) => {
                 <Text style={styles.checkoutText}>Checkout</Text>
               </TouchableOpacity>
             </View>
-          </>
+          </ScrollView>
         )}
       </View>
     </SafeAreaView>
@@ -146,7 +181,9 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: PHONE_WIDTH,
     alignSelf: 'center',
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingTop: Platform.OS === 'android' ? 42 : 16,
+    backgroundColor: colors.background,
   },
 
   header: {
@@ -167,7 +204,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 22,
+    fontSize: 25,
     fontWeight: '900',
     color: colors.textPrimary,
   },
@@ -176,37 +213,45 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingBottom: 70,
   },
 
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 24,
     color: colors.textPrimary,
     fontWeight: '900',
-    marginTop: 16,
+    marginTop: 20,
   },
 
   emptyText: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.textSecondary,
-    marginTop: 8,
+    marginTop: 10,
+    textAlign: 'center',
   },
 
   browseButton: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 14,
-    marginTop: 24,
+    paddingHorizontal: 34,
+    paddingVertical: 16,
+    borderRadius: 18,
+    marginTop: 30,
   },
 
   browseText: {
     color: colors.textWhite,
     fontWeight: '900',
+    fontSize: 16,
+  },
+
+  scrollContent: {
+    paddingTop: 8,
+    paddingBottom: 40,
   },
 
   cartItem: {
     backgroundColor: colors.surface,
-    borderRadius: 20,
+    borderRadius: 22,
     padding: 12,
     marginTop: 16,
     borderWidth: 1,
@@ -216,8 +261,8 @@ const styles = StyleSheet.create({
   },
 
   imageBox: {
-    width: 72,
-    height: 72,
+    width: 76,
+    height: 76,
     borderRadius: 18,
     backgroundColor: '#F8E8D4',
     alignItems: 'center',
@@ -241,11 +286,18 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
 
+  itemCategory: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+    fontWeight: '600',
+  },
+
   itemPrice: {
     fontSize: 14,
     color: colors.primary,
     fontWeight: '900',
-    marginTop: 4,
+    marginTop: 5,
   },
 
   quantityRow: {
@@ -255,8 +307,8 @@ const styles = StyleSheet.create({
   },
 
   quantityButton: {
-    width: 27,
-    height: 27,
+    width: 28,
+    height: 28,
     borderRadius: 14,
     backgroundColor: '#F8E8D4',
     alignItems: 'center',
@@ -264,22 +316,27 @@ const styles = StyleSheet.create({
   },
 
   quantity: {
-    marginHorizontal: 12,
+    marginHorizontal: 13,
     fontSize: 14,
     fontWeight: '900',
     color: colors.textPrimary,
   },
 
   summaryBox: {
-    position: 'absolute',
-    left: 18,
-    right: 18,
-    bottom: 14,
     backgroundColor: colors.surface,
     borderRadius: 24,
     padding: 18,
     borderWidth: 1,
     borderColor: colors.border,
+    marginTop: 18,
+    marginBottom: 12,
+  },
+
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: colors.textPrimary,
+    marginBottom: 14,
   },
 
   summaryRow: {
@@ -324,7 +381,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 12,
   },
 
   checkoutText: {
