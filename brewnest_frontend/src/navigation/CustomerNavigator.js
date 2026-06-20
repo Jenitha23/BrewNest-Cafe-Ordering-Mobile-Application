@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Platform } from 'react-native';
 import { colors } from '../theme/colors';
 
 // Existing Screens
@@ -85,23 +86,66 @@ const CustomerNavigator = () => {
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          paddingBottom: 8,
+
           paddingTop: 8,
-          height: 64,
+          paddingBottom: Platform.OS === 'android' ? 8 : 18,
+          height: Platform.OS === 'android' ? 68 : 82,
+
+          elevation: 10,
+          shadowColor: colors.shadow,
+          shadowOffset: {
+            width: 0,
+            height: -3,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
         },
 
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '700',
+          marginTop: 2,
+        },
+
+        tabBarItemStyle: {
+          paddingVertical: 3,
         },
 
         headerShown: false,
+        tabBarHideOnKeyboard: true,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="Menu" component={MenuStack} />
-      <Tab.Screen name="Orders" component={OrdersStack} />
-      <Tab.Screen name="Profile" component={ProfileStack} />
+      <Tab.Screen
+        name="Home"
+        component={HomeStack}
+        options={{
+          tabBarLabel: 'Home',
+        }}
+      />
+
+      <Tab.Screen
+        name="Menu"
+        component={MenuStack}
+        options={{
+          tabBarLabel: 'Menu',
+        }}
+      />
+
+      <Tab.Screen
+        name="Orders"
+        component={OrdersStack}
+        options={{
+          tabBarLabel: 'Orders',
+        }}
+      />
+
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStack}
+        options={{
+          tabBarLabel: 'Profile',
+        }}
+      />
     </Tab.Navigator>
   );
 };

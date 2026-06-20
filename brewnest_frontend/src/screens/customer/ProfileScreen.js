@@ -3,197 +3,324 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   SafeAreaView,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  Platform,
 } from 'react-native';
-import { AuthContext } from '../../context/AuthContext';
-import { colors } from '../../theme/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { colors } from '../../theme/colors';
+import { AuthContext } from '../../context/AuthContext';
 
 const ProfileScreen = ({ navigation }) => {
-  const { user } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
 
-  const profileFields = [
-    { label: 'Full Name', value: user?.fullName, icon: 'account' },
-    { label: 'Email Address', value: user?.email, icon: 'email' },
-    { label: 'Phone Number', value: user?.phoneNumber || 'Not provided', icon: 'phone' },
-    { label: 'Member Since', value: 'January 2024', icon: 'calendar' },
-  ];
+  const user = auth?.user || auth?.customer || auth?.userData;
+
+  const getCleanDisplayName = () => {
+    const rawName =
+      user?.fullName ||
+      user?.name ||
+      user?.customerName ||
+      user?.email?.split('@')[0] ||
+      'Coffee Lover';
+
+    const words = String(rawName).trim().split(/\s+/);
+
+    if (words.length >= 6) {
+      const half = Math.floor(words.length / 2);
+      const firstHalf = words.slice(0, half).join(' ');
+      const secondHalf = words.slice(half).join(' ');
+
+      if (firstHalf === secondHalf) {
+        return firstHalf;
+      }
+    }
+
+    return rawName;
+  };
+
+  const displayName = getCleanDisplayName();
+  const displayEmail = user?.email || 'No email available';
+  const displayPhone = user?.phoneNumber || user?.phone || 'No phone number';
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            if (auth?.logout) {
+              await auth.logout();
+            } else if (auth?.signOut) {
+              await auth.signOut();
+            } else {
+              Alert.alert('Error', 'Logout function not found in AuthContext.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Icon name="arrow-left" size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <View style={{ width: 40 }} />
-        </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.screen}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Profile</Text>
+            <Text style={styles.subtitle}>Manage your BrewNest account</Text>
+          </View>
 
-        {/* Profile Image */}
-        <View style={styles.profileImageContainer}>
-          <View style={styles.profileImage}>
-            <Text style={styles.profileInitial}>
-              {user?.fullName?.charAt(0) || 'C'}
+          <View style={styles.profileCard}>
+            <View style={styles.avatarCircle}>
+              <Icon name="account" size={58} color={colors.textWhite} />
+            </View>
+
+            <Text style={styles.name} numberOfLines={2}>
+              {displayName}
+            </Text>
+
+            <Text style={styles.email} numberOfLines={1}>
+              {displayEmail}
             </Text>
           </View>
-          <TouchableOpacity style={styles.editImageButton}>
-            <Icon name="camera" size={20} color={colors.textWhite} />
-          </TouchableOpacity>
-        </View>
 
-        {/* Profile Info */}
-        <View style={styles.infoContainer}>
-          {profileFields.map((field, index) => (
-            <View key={index} style={styles.infoRow}>
-              <View style={styles.infoIcon}>
-                <Icon name={field.icon} size={22} color={colors.primary} />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>{field.label}</Text>
-                <Text style={styles.infoValue}>{field.value}</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <Icon name="email-outline" size={22} color={colors.primary} />
+
+              <View style={styles.infoTextBox}>
+                <Text style={styles.infoLabel}>Email</Text>
+                <Text style={styles.infoValue} numberOfLines={1}>
+                  {displayEmail}
+                </Text>
               </View>
             </View>
-          ))}
-        </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Icon name="lock-reset" size={22} color={colors.primary} />
-            <Text style={styles.actionText}>Change Password</Text>
+            <View style={styles.divider} />
+
+            <View style={styles.infoRow}>
+              <Icon name="phone-outline" size={22} color={colors.primary} />
+
+              <View style={styles.infoTextBox}>
+                <Text style={styles.infoLabel}>Phone</Text>
+                <Text style={styles.infoValue}>{displayPhone}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.menuCard}>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate('Settings')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.menuLeft}>
+                <Icon name="cog-outline" size={22} color={colors.primary} />
+                <Text style={styles.menuText}>Settings</Text>
+              </View>
+
+              <Icon name="chevron-right" size={24} color={colors.textLight} />
+            </TouchableOpacity>
+
+            <View style={styles.divider} />
+
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => navigation.navigate('Cart')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.menuLeft}>
+                <Icon name="cart-outline" size={22} color={colors.primary} />
+                <Text style={styles.menuText}>My Cart</Text>
+              </View>
+
+              <Icon name="chevron-right" size={24} color={colors.textLight} />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+            activeOpacity={0.85}
+          >
+            <Icon name="logout" size={22} color={colors.textWhite} />
+            <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Icon name="bell" size={22} color={colors.primary} />
-            <Text style={styles.actionText}>Notification Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Icon name="credit-card" size={22} color={colors.primary} />
-            <Text style={styles.actionText}>Payment Methods</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
 
+const PHONE_WIDTH = 430;
+
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
+
+  screen: {
+    flex: 1,
+    width: '100%',
+    maxWidth: PHONE_WIDTH,
+    alignSelf: 'center',
+    paddingHorizontal: 18,
+    paddingTop: Platform.OS === 'android' ? 42 : 16,
+    backgroundColor: colors.background,
+  },
+
+  scrollContent: {
+    paddingBottom: 40,
+  },
+
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    marginBottom: 22,
   },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+
+  title: {
+    fontSize: 30,
+    fontWeight: '900',
     color: colors.textPrimary,
   },
-  profileImageContainer: {
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 24,
+
+  subtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 6,
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 4,
-    borderColor: colors.surface,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  profileInitial: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: colors.textWhite,
-  },
-  editImageButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: '35%',
-    backgroundColor: colors.primary,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.surface,
-  },
-  infoContainer: {
+
+  profileCard: {
     backgroundColor: colors.surface,
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 26,
+    padding: 22,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
+
+  avatarCircle: {
+    width: 105,
+    height: 105,
+    borderRadius: 55,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+
+  name: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '900',
+    color: colors.textPrimary,
+    textAlign: 'center',
+  },
+
+  email: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 7,
+    textAlign: 'center',
+  },
+
+  infoCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 22,
+    padding: 16,
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingVertical: 8,
   },
-  infoIcon: {
-    width: 40,
-    alignItems: 'center',
-  },
-  infoContent: {
+
+  infoTextBox: {
+    marginLeft: 12,
     flex: 1,
   },
+
   infoLabel: {
     fontSize: 12,
     color: colors.textSecondary,
-    marginBottom: 2,
+    fontWeight: '700',
   },
+
   infoValue: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textPrimary,
-    fontWeight: '500',
+    fontWeight: '800',
+    marginTop: 3,
   },
-  actionsContainer: {
-    marginTop: 20,
-    marginHorizontal: 20,
+
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 8,
+  },
+
+  menuCard: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 30,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  actionButton: {
+
+  menuRow: {
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    justifyContent: 'space-between',
   },
-  actionText: {
+
+  menuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  menuText: {
     fontSize: 15,
     color: colors.textPrimary,
+    fontWeight: '800',
     marginLeft: 12,
+  },
+
+  logoutButton: {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 26,
+    marginBottom: 10,
+  },
+
+  logoutText: {
+    color: colors.textWhite,
+    fontSize: 16,
+    fontWeight: '900',
+    marginLeft: 8,
   },
 });
 

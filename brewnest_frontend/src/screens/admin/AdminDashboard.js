@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -6,136 +6,285 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
 } from 'react-native';
-import { AuthContext } from '../../context/AuthContext';
-import { colors } from '../../theme/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { colors } from '../../theme/colors';
+import { AuthContext } from '../../context/AuthContext';
 
 const AdminDashboard = ({ navigation }) => {
   const { user, logout } = useContext(AuthContext);
 
-  const handleLogout = async () => {
-    await logout();
-    navigation.replace('Auth');
+  const [dashboardStats, setDashboardStats] = useState({
+    totalItems: 0,
+    availableItems: 0,
+    unavailableItems: 0,
+    categories: 0,
+  });
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      /**
+       * Replace with actual backend API calls later
+       */
+
+      setDashboardStats({
+        totalItems: 15,
+        availableItems: 12,
+        unavailableItems: 3,
+        categories: 5,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const adminMenu = [
-    {
-      id: 1,
-      title: 'Users Management',
-      icon: 'account-group',
-      screen: 'AdminUsers',
-      color: colors.primary,
-      description: 'Manage customers and staff',
-    },
-    {
-      id: 2,
-      title: 'Menu Management',
-      icon: 'food',
-      screen: 'AdminMenu',
-      color: colors.secondary,
-      description: 'Add/edit menu items',
-    },
-    {
-      id: 3,
-      title: 'Orders Overview',
-      icon: 'clipboard-list',
-      screen: 'AdminOrders',
-      color: colors.accent,
-      description: 'Track all orders',
-    },
-    {
-      id: 4,
-      title: 'Analytics',
-      icon: 'chart-line',
-      screen: 'AdminAnalytics',
-      color: colors.info,
-      description: 'Sales & reports',
-    },
-    {
-      id: 5,
-      title: 'Settings',
-      icon: 'cog',
-      screen: 'AdminSettings',
-      color: colors.textSecondary,
-      description: 'System configuration',
-    },
-  ];
-
-  const stats = [
-    { label: 'Total Users', value: '156', icon: 'account-multiple', color: colors.primary },
-    { label: 'Total Orders', value: '1,234', icon: 'shopping', color: colors.secondary },
-    { label: 'Revenue', value: '$12.5K', icon: 'currency-usd', color: colors.success },
-    { label: 'Pending', value: '23', icon: 'clock', color: colors.warning },
-  ];
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
         {/* Header */}
+
         <View style={styles.header}>
           <View>
-            <Text style={styles.adminBadge}>ADMIN PORTAL</Text>
-            <Text style={styles.greeting}>Hello, {user?.fullName || 'Admin'}</Text>
+            <Text style={styles.badge}>ADMIN PANEL</Text>
+
+            <Text style={styles.welcome}>
+              Welcome,
+            </Text>
+
+            <Text style={styles.adminName}>
+              {user?.fullName || 'Admin'}
+            </Text>
           </View>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-            <Icon name="logout" size={24} color={colors.error} />
+
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Icon
+              name="logout"
+              size={24}
+              color={colors.primary}
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          {stats.map((stat, index) => (
-            <View key={index} style={styles.statCard}>
-              <View style={[styles.statIcon, { backgroundColor: stat.color + '20' }]}>
-                <Icon name={stat.icon} size={28} color={stat.color} />
-              </View>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
+        {/* Dashboard Banner */}
 
-        {/* Admin Menu */}
-        <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>Management</Text>
-          <View style={styles.menuList}>
-            {adminMenu.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.menuItem}
-                onPress={() => navigation.navigate(item.screen)}
-              >
-                <View style={[styles.menuIcon, { backgroundColor: item.color + '15' }]}>
-                  <Icon name={item.icon} size={28} color={item.color} />
-                </View>
-                <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>{item.title}</Text>
-                  <Text style={styles.menuDescription}>{item.description}</Text>
-                </View>
-                <Icon name="chevron-right" size={24} color={colors.textLight} />
-              </TouchableOpacity>
-            ))}
+        <View style={styles.banner}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.bannerLabel}>
+              BrewNest
+            </Text>
+
+            <Text style={styles.bannerTitle}>
+              Menu Management
+            </Text>
+
+            <Text style={styles.bannerText}>
+              Manage menu items, categories and availability.
+            </Text>
+          </View>
+
+          <View style={styles.bannerIcon}>
+            <Icon
+              name="coffee"
+              size={50}
+              color={colors.surface}
+            />
           </View>
         </View>
 
-        {/* Recent Activity */}
-        <View style={styles.activitySection}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.activityList}>
-            {[1, 2, 3].map((_, index) => (
-              <View key={index} style={styles.activityItem}>
-                <View style={styles.activityIcon}>
-                  <Icon name="bell" size={20} color={colors.primary} />
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>New order received</Text>
-                  <Text style={styles.activityTime}>2 minutes ago</Text>
-                </View>
-              </View>
-            ))}
+        {/* Stats */}
+
+        <Text style={styles.sectionTitle}>
+          Overview
+        </Text>
+
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Icon
+              name="food"
+              size={28}
+              color={colors.primary}
+            />
+
+            <Text style={styles.statValue}>
+              {dashboardStats.totalItems}
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Menu Items
+            </Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Icon
+              name="check-circle"
+              size={28}
+              color="#2E7D32"
+            />
+
+            <Text style={styles.statValue}>
+              {dashboardStats.availableItems}
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Available
+            </Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Icon
+              name="close-circle"
+              size={28}
+              color="#D32F2F"
+            />
+
+            <Text style={styles.statValue}>
+              {dashboardStats.unavailableItems}
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Out Of Stock
+            </Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Icon
+              name="shape"
+              size={28}
+              color="#6A1B9A"
+            />
+
+            <Text style={styles.statValue}>
+              {dashboardStats.categories}
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Categories
+            </Text>
           </View>
         </View>
+
+        {/* Management */}
+
+        <Text style={styles.sectionTitle}>
+          Management
+        </Text>
+
+        <TouchableOpacity
+          style={styles.menuCard}
+          onPress={() => navigation.navigate('AdminMenu')}
+        >
+          <View style={styles.iconBox}>
+            <Icon
+              name="food"
+              size={30}
+              color={colors.primary}
+            />
+          </View>
+
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>
+              Menu Management
+            </Text>
+
+            <Text style={styles.cardDescription}>
+              Add, update and delete menu items
+            </Text>
+          </View>
+
+          <Icon
+            name="chevron-right"
+            size={24}
+            color={colors.textLight}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuCard}
+          onPress={() => navigation.navigate('AdminCategories')}
+        >
+          <View style={styles.iconBox}>
+            <Icon
+              name="shape"
+              size={30}
+              color={colors.primary}
+            />
+          </View>
+
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>
+              Category Management
+            </Text>
+
+            <Text style={styles.cardDescription}>
+              Create and manage categories
+            </Text>
+          </View>
+
+          <Icon
+            name="chevron-right"
+            size={24}
+            color={colors.textLight}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuCard}
+          onPress={() => navigation.navigate('AdminMenu')}
+        >
+          <View style={styles.iconBox}>
+            <Icon
+              name="toggle-switch"
+              size={30}
+              color={colors.primary}
+            />
+          </View>
+
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>
+              Availability Control
+            </Text>
+
+            <Text style={styles.cardDescription}>
+              Manage stock availability
+            </Text>
+          </View>
+
+          <Icon
+            name="chevron-right"
+            size={24}
+            color={colors.textLight}
+          />
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -146,153 +295,142 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: colors.surface,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
   },
-  adminBadge: {
-    fontSize: 12,
+
+  badge: {
     color: colors.primary,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: '700',
+    fontSize: 12,
   },
-  greeting: {
-    fontSize: 20,
-    fontWeight: 'bold',
+
+  welcome: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginTop: 6,
+  },
+
+  adminName: {
     color: colors.textPrimary,
+    fontSize: 24,
+    fontWeight: '900',
   },
+
   logoutButton: {
-    padding: 8,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 16,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  statIcon: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 15,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
   },
-  statValue: {
-    fontSize: 22,
-    fontWeight: 'bold',
+
+  banner: {
+    marginHorizontal: 20,
+    backgroundColor: colors.primary,
+    borderRadius: 24,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  bannerLabel: {
+    color: '#F5D8BC',
+    fontWeight: '700',
+  },
+
+  bannerTitle: {
+    color: colors.textWhite,
+    fontSize: 24,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+
+  bannerText: {
+    color: '#F7E8DA',
+    marginTop: 6,
+    lineHeight: 20,
+  },
+
+  bannerIcon: {
+    marginLeft: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '900',
     color: colors.textPrimary,
+    marginHorizontal: 20,
+    marginTop: 28,
+    marginBottom: 14,
   },
+
+  statsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+
+  statCard: {
+    width: '48%',
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+
+  statValue: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: colors.textPrimary,
+    marginTop: 8,
+  },
+
   statLabel: {
-    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 4,
   },
-  menuSection: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 16,
-  },
-  menuList: {
-    gap: 12,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+
+  menuCard: {
+    marginHorizontal: 20,
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  menuIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  menuContent: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 4,
-  },
-  menuDescription: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  activitySection: {
-    padding: 20,
-    marginBottom: 30,
-  },
-  activityList: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary + '10',
+    padding: 18,
+    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  iconBox: {
+    width: 55,
+    height: 55,
+    borderRadius: 15,
+    backgroundColor: '#F8E8D4',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
   },
-  activityContent: {
+
+  cardContent: {
     flex: 1,
+    marginLeft: 15,
   },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '500',
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '900',
     color: colors.textPrimary,
-    marginBottom: 4,
   },
-  activityTime: {
-    fontSize: 12,
-    color: colors.textLight,
+
+  cardDescription: {
+    color: colors.textSecondary,
+    marginTop: 4,
   },
 });
 

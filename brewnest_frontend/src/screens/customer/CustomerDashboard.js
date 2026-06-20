@@ -32,8 +32,30 @@ const CustomerDashboard = ({ navigation }) => {
 
   const user = auth?.user || auth?.customer || auth?.userData;
 
-  const displayName =
-    user?.fullName || user?.name || user?.email?.split('@')[0] || 'Coffee Lover';
+  const getCleanDisplayName = () => {
+    const rawName =
+      user?.fullName ||
+      user?.name ||
+      user?.customerName ||
+      user?.email?.split('@')[0] ||
+      'Coffee Lover';
+
+    const words = String(rawName).trim().split(/\s+/);
+
+    if (words.length >= 6) {
+      const half = Math.floor(words.length / 2);
+      const firstHalf = words.slice(0, half).join(' ');
+      const secondHalf = words.slice(half).join(' ');
+
+      if (firstHalf === secondHalf) {
+        return firstHalf;
+      }
+    }
+
+    return rawName;
+  };
+
+  const displayName = getCleanDisplayName();
 
   const loadCategories = async () => {
     const data = await menuApi.getCustomerCategories();
@@ -90,10 +112,13 @@ const CustomerDashboard = ({ navigation }) => {
     });
   };
 
-  const handleAddToCart = useCallback((item) => {
-    cart?.addToCart(item, 1);
-    Alert.alert('Added to Cart', `${item.name} added to your cart.`);
-  }, []);
+  const handleAddToCart = useCallback(
+    (item) => {
+      cart?.addToCart(item, 1);
+      Alert.alert('Added to Cart', `${item.name} added to your cart.`);
+    },
+    [cart]
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -101,9 +126,11 @@ const CustomerDashboard = ({ navigation }) => {
         <View style={styles.topDecor} />
 
         <View style={styles.header}>
-          <View>
+          <View style={styles.nameBox}>
             <Text style={styles.greeting}>Good Morning</Text>
-            <Text style={styles.customerName}>{displayName}</Text>
+            <Text style={styles.customerName} numberOfLines={2}>
+              {displayName}
+            </Text>
           </View>
 
           <TouchableOpacity
@@ -112,6 +139,7 @@ const CustomerDashboard = ({ navigation }) => {
             activeOpacity={0.8}
           >
             <Icon name="cart-outline" size={24} color={colors.textWhite} />
+
             {cart?.totalItems > 0 && (
               <View style={styles.cartBadge}>
                 <Text style={styles.cartBadgeText}>{cart.totalItems}</Text>
@@ -156,12 +184,13 @@ const CustomerDashboard = ({ navigation }) => {
             </View>
 
             <View style={styles.bannerIcon}>
-              <Icon name="coffee-to-go" size={68} color={colors.secondaryLight} />
+              <Icon name="coffee-to-go" size={60} color={colors.secondaryLight} />
             </View>
           </View>
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Categories</Text>
+
             <TouchableOpacity
               onPress={() => {
                 setSelectedCategoryId(null);
@@ -262,38 +291,44 @@ const styles = StyleSheet.create({
     maxWidth: PHONE_WIDTH,
     alignSelf: 'center',
     paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'android' ? 18 : 8,
+    paddingTop: Platform.OS === 'android' ? 42 : 16,
     backgroundColor: colors.background,
   },
 
   topDecor: {
     position: 'absolute',
-    width: 190,
-    height: 190,
-    borderRadius: 100,
+    width: 170,
+    height: 170,
+    borderRadius: 90,
     backgroundColor: colors.secondaryLight,
-    top: -95,
-    right: -80,
+    top: -75,
+    right: -70,
     opacity: 0.45,
   },
 
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+
+  nameBox: {
+    flex: 1,
+    paddingRight: 14,
   },
 
   greeting: {
     color: colors.textSecondary,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
   customerName: {
     color: colors.textPrimary,
-    fontSize: 25,
+    fontSize: 26,
     fontWeight: '900',
-    marginTop: 3,
+    marginTop: 5,
+    lineHeight: 32,
   },
 
   cartButton: {
@@ -303,6 +338,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 12,
   },
 
   cartBadge: {
@@ -325,7 +361,7 @@ const styles = StyleSheet.create({
   },
 
   searchBox: {
-    marginTop: 22,
+    marginTop: 28,
     height: 52,
     backgroundColor: colors.surface,
     borderRadius: 18,
@@ -346,7 +382,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 40,
   },
 
   banner: {
@@ -383,9 +419,9 @@ const styles = StyleSheet.create({
   },
 
   bannerIcon: {
-    width: 88,
-    height: 88,
-    borderRadius: 50,
+    width: 82,
+    height: 82,
+    borderRadius: 45,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
