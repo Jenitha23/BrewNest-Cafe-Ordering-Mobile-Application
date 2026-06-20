@@ -8,74 +8,83 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
+import { getImageUrl } from '../../api/menuApi';
 
 const BrewCard = ({
+  item,
   name,
   description,
   price,
-  image,
-  rating,
-  category,
+  imageUrl,
+  categoryName,
+  availabilityStatus,
   onPress,
-  onFavorite,
-  isFavorite = false,
+  onAddToCart,
 }) => {
-  const formattedPrice =
-    typeof price === 'number' ? `Rs. ${price.toFixed(0)}` : `Rs. ${price || 0}`;
+  const finalName = item?.name || name;
+  const finalDescription = item?.description || description;
+  const finalPrice = item?.price || price;
+  const finalImageUrl = item?.imageUrl || imageUrl;
+  const finalCategory = item?.categoryName || categoryName || 'Coffee';
+  const finalStatus = item?.availabilityStatus || availabilityStatus || 'AVAILABLE';
+
+  const isAvailable = finalStatus === 'AVAILABLE';
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={onFavorite}
-        activeOpacity={0.8}
-      >
-        <Icon
-          name={isFavorite ? 'heart' : 'heart-outline'}
-          size={19}
-          color={isFavorite ? colors.error : colors.primary}
-        />
-      </TouchableOpacity>
-
-      <View style={styles.imageContainer}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+      <View style={styles.imageBox}>
+        {finalImageUrl ? (
+          <Image
+            source={{ uri: getImageUrl(finalImageUrl) }}
+            style={styles.image}
+            resizeMode="cover"
+          />
         ) : (
-          <View style={styles.imagePlaceholder}>
-            <Icon name="coffee-to-go" size={58} color={colors.secondary} />
+          <View style={styles.placeholder}>
+            <Icon name="coffee-to-go" size={48} color={colors.secondary} />
           </View>
         )}
+
+        <View
+          style={[
+            styles.statusBadge,
+            isAvailable ? styles.availableBadge : styles.outBadge,
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusText,
+              isAvailable ? styles.availableText : styles.outText,
+            ]}
+          >
+            {isAvailable ? 'Available' : 'Out'}
+          </Text>
+        </View>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={1}>
-          {name}
-        </Text>
+      <Text style={styles.name} numberOfLines={1}>
+        {finalName}
+      </Text>
 
-        <Text style={styles.description} numberOfLines={2}>
-          {description || 'Freshly brewed coffee made for you'}
-        </Text>
+      <Text style={styles.description} numberOfLines={2}>
+        {finalDescription}
+      </Text>
 
-        <View style={styles.metaRow}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{category || 'Coffee'}</Text>
-          </View>
+      <View style={styles.categoryBadge}>
+        <Text style={styles.categoryText}>{finalCategory}</Text>
+      </View>
 
-          {rating ? (
-            <View style={styles.ratingContainer}>
-              <Icon name="star" size={13} color={colors.warning} />
-              <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
-            </View>
-          ) : null}
-        </View>
+      <View style={styles.footer}>
+        <Text style={styles.price}>Rs. {Number(finalPrice || 0).toFixed(0)}</Text>
 
-        <View style={styles.bottomRow}>
-          <Text style={styles.price}>{formattedPrice}</Text>
-
-          <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
-            <Icon name="plus" size={18} color={colors.textWhite} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[styles.addButton, !isAvailable && styles.disabledAddButton]}
+          onPress={onAddToCart}
+          disabled={!isAvailable}
+          activeOpacity={0.8}
+        >
+          <Icon name="plus" size={18} color={colors.textWhite} />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -85,9 +94,9 @@ const styles = StyleSheet.create({
   card: {
     width: '48%',
     backgroundColor: colors.surface,
-    borderRadius: 24,
-    marginBottom: 16,
+    borderRadius: 22,
     padding: 12,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 4,
@@ -95,50 +104,64 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 10,
-    position: 'relative',
   },
-  favoriteButton: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 5,
-    width: 32,
-    height: 32,
+
+  imageBox: {
+    width: '100%',
+    height: 110,
     borderRadius: 18,
     backgroundColor: '#F8E8D4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  imageContainer: {
-    height: 110,
-    borderRadius: 20,
-    backgroundColor: '#F8E8D4',
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 11,
   },
+
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
-  imagePlaceholder: {
-    width: '100%',
-    height: '100%',
+
+  placeholder: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  content: {
-    flex: 1,
+
+  statusBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
+
+  availableBadge: {
+    backgroundColor: '#E4F4E6',
+  },
+
+  outBadge: {
+    backgroundColor: '#FBE3DF',
+  },
+
+  statusText: {
+    fontSize: 9,
+    fontWeight: '900',
+  },
+
+  availableText: {
+    color: colors.success,
+  },
+
+  outText: {
+    color: colors.error,
+  },
+
   name: {
     fontSize: 15,
     fontWeight: '900',
     color: colors.textPrimary,
   },
+
   description: {
     fontSize: 11,
     color: colors.textSecondary,
@@ -146,50 +169,46 @@ const styles = StyleSheet.create({
     marginTop: 4,
     minHeight: 32,
   },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 9,
-  },
+
   categoryBadge: {
+    alignSelf: 'flex-start',
     backgroundColor: colors.transparentBrown,
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 12,
+    marginTop: 8,
   },
+
   categoryText: {
     fontSize: 10,
     color: colors.primary,
     fontWeight: '800',
   },
-  ratingContainer: {
+
+  footer: {
+    marginTop: 11,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  ratingText: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginLeft: 3,
-    fontWeight: '700',
-  },
-  bottomRow: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
+
   price: {
     fontSize: 15,
-    fontWeight: '900',
     color: colors.primary,
+    fontWeight: '900',
   },
+
   addButton: {
-    width: 30,
-    height: 30,
+    width: 31,
+    height: 31,
     borderRadius: 16,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  disabledAddButton: {
+    backgroundColor: colors.textLight,
   },
 });
 

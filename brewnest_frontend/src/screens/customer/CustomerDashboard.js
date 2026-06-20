@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,60 +7,97 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+  Alert,
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import BrewCard from '../../components/cards/BrewCard';
+import { menuApi } from '../../api/menuApi';
+import { CartContext } from '../../context/CartContext';
 import { AuthContext } from '../../context/AuthContext';
-
-const categories = ['Cappuccino', 'Black Coffee', 'Latte', 'Dessert'];
-
-const brews = [
-  {
-    id: 1,
-    name: 'Cappuccino',
-    description: 'Creamy espresso with steamed milk foam',
-    price: 850,
-    rating: 4.8,
-    category: 'Coffee',
-  },
-  {
-    id: 2,
-    name: 'Iced Coffee',
-    description: 'Cold coffee with smooth roasted flavour',
-    price: 750,
-    rating: 4.6,
-    category: 'Cold',
-  },
-  {
-    id: 3,
-    name: 'Cafe Latte',
-    description: 'Rich espresso mixed with warm milk',
-    price: 900,
-    rating: 4.7,
-    category: 'Coffee',
-  },
-  {
-    id: 4,
-    name: 'Chocolate Cake',
-    description: 'Soft chocolate cake slice for coffee time',
-    price: 650,
-    rating: 4.5,
-    category: 'Dessert',
-  },
-];
 
 const CustomerDashboard = ({ navigation }) => {
   const auth = useContext(AuthContext);
+  const cart = useContext(CartContext);
+
+  const [categories, setCategories] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
   const user = auth?.user || auth?.customer || auth?.userData;
 
   const displayName =
     user?.fullName || user?.name || user?.email?.split('@')[0] || 'Coffee Lover';
 
+  const loadCategories = async () => {
+    const data = await menuApi.getCustomerCategories();
+    setCategories(data || []);
+  };
+
+  const loadMenuItems = async () => {
+    const data = await menuApi.getCustomerMenuItems({
+      categoryId: selectedCategoryId,
+      search,
+    });
+
+    setMenuItems(data || []);
+  };
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      await loadCategories();
+      await loadMenuItems();
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+      Alert.alert('Error', 'Unable to load menu items.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshData = async () => {
+    try {
+      setRefreshing(true);
+      await loadCategories();
+      await loadMenuItems();
+    } catch (error) {
+      Alert.alert('Error', 'Unable to refresh menu.');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    loadMenuItems().catch((error) => {
+      console.log(error.response?.data || error.message);
+    });
+  }, [selectedCategoryId]);
+
+  const handleSearch = () => {
+    loadMenuItems().catch(() => {
+      Alert.alert('Error', 'Search failed.');
+    });
+  };
+
+  const handleAddToCart = useCallback((item) => {
+    cart?.addToCart(item, 1);
+    Alert.alert('Added to Cart', `${item.name} added to your cart.`);
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <View style={styles.screen}>
         <View style={styles.topDecor} />
 
         <View style={styles.header}>
@@ -70,45 +107,69 @@ const CustomerDashboard = ({ navigation }) => {
           </View>
 
           <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => navigation.navigate('Profile')}
+            style={styles.cartButton}
+            onPress={() => navigation.navigate('Cart')}
             activeOpacity={0.8}
           >
-            <Icon name="account" size={24} color={colors.textWhite} />
+            <Icon name="cart-outline" size={24} color={colors.textWhite} />
+            {cart?.totalItems > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cart.totalItems}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
         <View style={styles.searchBox}>
           <Icon name="magnify" size={22} color={colors.textLight} />
+
           <TextInput
-            placeholder="Search coffee..."
+            placeholder="Search coffee, tea, desserts..."
             placeholderTextColor={colors.textLight}
             style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            onSubmitEditing={handleSearch}
+            selectionColor={colors.primary}
+            underlineColorAndroid="transparent"
           />
-          <Icon name="tune-variant" size={22} color={colors.primary} />
+
+          <TouchableOpacity onPress={handleSearch}>
+            <Icon name="arrow-right" size={22} color={colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={refreshData} />
+          }
         >
           <View style={styles.banner}>
-            <View style={styles.bannerContent}>
-              <Text style={styles.bannerSmallText}>Today Special</Text>
-              <Text style={styles.bannerTitle}>Buy 1 Get 1 Free</Text>
-              <Text style={styles.bannerText}>
-                Enjoy your favourite BrewNest coffee today.
+            <View style={styles.bannerTextBox}>
+              <Text style={styles.bannerSmall}>Today Special</Text>
+              <Text style={styles.bannerTitle}>Fresh BrewNest Menu</Text>
+              <Text style={styles.bannerDesc}>
+                Browse your favourite cafe items and order in seconds.
               </Text>
             </View>
 
             <View style={styles.bannerIcon}>
-              <Icon name="coffee-to-go" size={70} color={colors.secondaryLight} />
+              <Icon name="coffee-to-go" size={68} color={colors.secondaryLight} />
             </View>
           </View>
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Categories</Text>
-            <Text style={styles.seeAll}>See all</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedCategoryId(null);
+                setSearch('');
+              }}
+            >
+              <Text style={styles.clearText}>Clear</Text>
+            </TouchableOpacity>
           </View>
 
           <ScrollView
@@ -116,96 +177,95 @@ const CustomerDashboard = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             style={styles.categoryScroll}
           >
-            {categories.map((item, index) => (
+            <TouchableOpacity
+              style={[
+                styles.categoryChip,
+                selectedCategoryId === null && styles.activeCategoryChip,
+              ]}
+              onPress={() => setSelectedCategoryId(null)}
+            >
+              <Text
+                style={[
+                  styles.categoryText,
+                  selectedCategoryId === null && styles.activeCategoryText,
+                ]}
+              >
+                All
+              </Text>
+            </TouchableOpacity>
+
+            {categories.map((category) => (
               <TouchableOpacity
-                key={item}
+                key={category.id}
                 style={[
                   styles.categoryChip,
-                  index === 0 && styles.activeCategoryChip,
+                  selectedCategoryId === category.id && styles.activeCategoryChip,
                 ]}
-                activeOpacity={0.85}
+                onPress={() => setSelectedCategoryId(category.id)}
               >
                 <Text
                   style={[
                     styles.categoryText,
-                    index === 0 && styles.activeCategoryText,
+                    selectedCategoryId === category.id && styles.activeCategoryText,
                   ]}
                 >
-                  {item}
+                  {category.name}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Popular Menu</Text>
-            <Text style={styles.seeAll}>View more</Text>
+            <Text style={styles.sectionTitle}>Available Menu</Text>
+            <Text style={styles.itemCount}>{menuItems.length} items</Text>
           </View>
 
-          <View style={styles.grid}>
-            {brews.map((item) => (
-              <BrewCard
-                key={item.id}
-                name={item.name}
-                description={item.description}
-                price={item.price}
-                rating={item.rating}
-                category={item.category}
-                onPress={() => {}}
-                onFavorite={() => {}}
-              />
-            ))}
-          </View>
+          {loading ? (
+            <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+          ) : menuItems.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Icon name="coffee-off-outline" size={48} color={colors.textLight} />
+              <Text style={styles.emptyTitle}>No items found</Text>
+              <Text style={styles.emptyText}>
+                Try another category or search keyword.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.grid}>
+              {menuItems.map((item) => (
+                <BrewCard
+                  key={item.id}
+                  item={item}
+                  onPress={() => navigation.navigate('MenuItemDetails', { itemId: item.id })}
+                  onAddToCart={() => handleAddToCart(item)}
+                />
+              ))}
+            </View>
+          )}
         </ScrollView>
-
-        <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem} activeOpacity={0.8}>
-            <Icon name="home" size={23} color={colors.primary} />
-            <Text style={styles.activeNavText}>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => navigation.navigate('Favorites')}
-            activeOpacity={0.8}
-          >
-            <Icon name="heart-outline" size={23} color={colors.textLight} />
-            <Text style={styles.navText}>Saved</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => navigation.navigate('Orders')}
-            activeOpacity={0.8}
-          >
-            <Icon name="clipboard-text-outline" size={23} color={colors.textLight} />
-            <Text style={styles.navText}>Orders</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.navItem}
-            onPress={() => navigation.navigate('Profile')}
-            activeOpacity={0.8}
-          >
-            <Icon name="account-outline" size={23} color={colors.textLight} />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </SafeAreaView>
   );
 };
+
+const PHONE_WIDTH = 430;
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  container: {
+
+  screen: {
     flex: 1,
+    width: '100%',
+    maxWidth: PHONE_WIDTH,
+    alignSelf: 'center',
     paddingHorizontal: 18,
     paddingTop: Platform.OS === 'android' ? 18 : 8,
+    backgroundColor: colors.background,
   },
+
   topDecor: {
     position: 'absolute',
     width: 190,
@@ -216,35 +276,54 @@ const styles = StyleSheet.create({
     right: -80,
     opacity: 0.45,
   },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+
   greeting: {
     color: colors.textSecondary,
     fontSize: 14,
     fontWeight: '600',
   },
+
   customerName: {
     color: colors.textPrimary,
     fontSize: 25,
     fontWeight: '900',
     marginTop: 3,
   },
-  profileButton: {
+
+  cartButton: {
     width: 46,
     height: 46,
     borderRadius: 24,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 5,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
   },
+
+  cartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -4,
+    backgroundColor: colors.error,
+    minWidth: 19,
+    height: 19,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+
+  cartBadgeText: {
+    color: colors.textWhite,
+    fontSize: 10,
+    fontWeight: '900',
+  },
+
   searchBox: {
     marginTop: 22,
     height: 52,
@@ -256,15 +335,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+
   searchInput: {
     flex: 1,
     marginHorizontal: 10,
     color: colors.textPrimary,
-    fontSize: 15,
+    fontSize: 14,
+    backgroundColor: 'transparent',
+    outlineStyle: 'none',
   },
+
   scrollContent: {
     paddingBottom: 100,
   },
+
   banner: {
     marginTop: 22,
     backgroundColor: colors.primary,
@@ -272,57 +356,71 @@ const styles = StyleSheet.create({
     padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    overflow: 'hidden',
   },
-  bannerContent: {
+
+  bannerTextBox: {
     flex: 1,
   },
-  bannerSmallText: {
+
+  bannerSmall: {
     color: colors.secondaryLight,
     fontSize: 13,
     fontWeight: '700',
-    marginBottom: 4,
   },
+
   bannerTitle: {
     color: colors.textWhite,
-    fontSize: 21,
+    fontSize: 20,
     fontWeight: '900',
+    marginTop: 5,
   },
-  bannerText: {
+
+  bannerDesc: {
     color: '#EAD6BC',
     fontSize: 13,
     lineHeight: 19,
-    marginTop: 7,
+    marginTop: 6,
   },
+
   bannerIcon: {
-    width: 92,
-    height: 92,
+    width: 88,
+    height: 88,
     borderRadius: 50,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 10,
   },
+
   sectionHeader: {
-    marginTop: 24,
+    marginTop: 23,
     marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+
   sectionTitle: {
     color: colors.textPrimary,
     fontSize: 19,
     fontWeight: '900',
   },
-  seeAll: {
+
+  clearText: {
     color: colors.primaryLight,
     fontSize: 13,
     fontWeight: '800',
   },
+
+  itemCount: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
   categoryScroll: {
     marginBottom: 2,
   },
+
   categoryChip: {
     backgroundColor: colors.surface,
     paddingHorizontal: 16,
@@ -332,57 +430,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+
   activeCategoryChip: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
+
   categoryText: {
     color: colors.primaryLight,
     fontSize: 13,
     fontWeight: '800',
   },
+
   activeCategoryText: {
     color: colors.textWhite,
   },
+
+  loader: {
+    marginTop: 50,
+  },
+
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  bottomNav: {
-    position: 'absolute',
-    left: 18,
-    right: 18,
-    bottom: 14,
-    height: 70,
-    borderRadius: 26,
+
+  emptyBox: {
     backgroundColor: colors.surface,
+    borderRadius: 24,
+    padding: 28,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    elevation: 12,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.13,
-    shadowRadius: 12,
   },
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navText: {
-    color: colors.textLight,
-    fontSize: 11,
-    marginTop: 3,
-    fontWeight: '700',
-  },
-  activeNavText: {
-    color: colors.primary,
-    fontSize: 11,
-    marginTop: 3,
+
+  emptyTitle: {
+    marginTop: 12,
+    fontSize: 17,
     fontWeight: '900',
+    color: colors.textPrimary,
+  },
+
+  emptyText: {
+    marginTop: 6,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });
 
