@@ -1,21 +1,20 @@
-// src/utils/constants.js
-export const COLORS = {
-  primary: '#6F4E37',
-  secondary: '#A0826A',
-  background: '#FFF8F0',
-  text: '#333333',
-  error: '#FF6B6B',
-  success: '#4CAF50',
-  white: '#FFFFFF',
+export const ROLES = {
+  CUSTOMER: 'CUSTOMER',
+  ADMIN: 'ADMIN',
 };
 
-export const API_ENDPOINTS = {
-  CUSTOMER_SIGNUP: '/customer/auth/signup',
-  CUSTOMER_LOGIN: '/customer/auth/login',
-  ADMIN_LOGIN: '/admin/auth/login',
+export const API_CONFIG = {
+  TIMEOUT: 30000,
+  BASE_URL: process.env.API_URL || 'http://localhost:8080/api',
 };
 
-export const STORAGE_KEYS = {
-  AUTH_TOKEN: 'authToken',
-  USER_DATA: 'userData',
+export const APP_CONFIG = {
+  APP_NAME: 'BrewNest',
+  VERSION: '1.0.0',
+};
+
+export const STORAGE_CONFIG = {
+  TOKEN_KEY: 'authToken',
+  USER_KEY: 'userData',
+  ROLE_KEY: 'userRole',
 };

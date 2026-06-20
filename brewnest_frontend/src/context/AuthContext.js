@@ -1,12 +1,13 @@
-// src/context/AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
-import { authService } from '../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authAPI } from '../api/endpoints';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -14,49 +15,135 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const userData = await authService.getCurrentUser();
-      if (userData) {
-        setUser(userData);
+      const token = await AsyncStorage.getItem('authToken');
+      const userData = await AsyncStorage.getItem('userData');
+      const userRole = await AsyncStorage.getItem('userRole');
+      
+      if (token && userData && userRole) {
+        setUser({
+          ...JSON.parse(userData),
+          role: userRole,
+          token,
+        });
       }
     } catch (error) {
       console.error('Auth check error:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const login = async (email, password, userType) => {
+  const customerSignup = async (signupData) => {
+    setIsLoading(true);
+    setError(null);
     try {
-      let response;
-      if (userType === 'admin') {
-        response = await authService.adminLogin(email, password);
-      } else {
-        response = await authService.customerLogin(email, password);
-      }
+      const response = await authAPI.customerSignup(signupData);
+      const { data } = response.data;
       
-      if (response.success) {
-        const userData = {
-          id: response.data.id,
-          email: response.data.email,
-          fullName: response.data.fullName,
-          role: response.data.role,
-        };
-        setUser(userData);
-        return { success: true, user: userData };
-      }
-      return { success: false, error: 'Login failed' };
+      await AsyncStorage.setItem('authToken', data.token);
+      await AsyncStorage.setItem('userData', JSON.stringify(data));
+      await AsyncStorage.setItem('userRole', 'CUSTOMER');
+      
+      setUser({
+        ...data,
+        role: 'CUSTOMER',
+        token: data.token,
+      });
+      
+      return { success: true, data };
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Login failed' };
+      const errorMessage = error.response?.data?.message || 'Signup failed. Please try again.';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const customerLogin = async (loginData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await authAPI.customerLogin(loginData);
+      const { data } = response.data;
+      
+      await AsyncStorage.setItem('authToken', data.token);
+      await AsyncStorage.setItem('userData', JSON.stringify(data));
+      await AsyncStorage.setItem('userRole', 'CUSTOMER');
+      
+      setUser({
+        ...data,
+        role: 'CUSTOMER',
+        token: data.token,
+      });
+      
+      return { success: true, data };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Invalid email or password';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const adminLogin = async (loginData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await authAPI.adminLogin(loginData);
+      const { data } = response.data;
+      
+      await AsyncStorage.setItem('authToken', data.token);
+      await AsyncStorage.setItem('userData', JSON.stringify(data));
+      await AsyncStorage.setItem('userRole', 'ADMIN');
+      
+      setUser({
+        ...data,
+        role: 'ADMIN',
+        token: data.token,
+      });
+      
+      return { success: true, data };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Invalid admin credentials';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
+    setIsLoading(true);
+    try {
+      await AsyncStorage.multiRemove(['authToken', 'userData', 'userRole']);
+      setUser(null);
+      setError(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  const clearError = () => setError(null);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, checkAuthStatus }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        error,
+        customerSignup,
+        customerLogin,
+        adminLogin,
+        logout,
+        clearError,
+        isAuthenticated: !!user,
+        userRole: user?.role,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
