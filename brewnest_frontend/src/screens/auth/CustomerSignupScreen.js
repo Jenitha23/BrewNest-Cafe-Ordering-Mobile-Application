@@ -8,10 +8,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  TextInput,
+  SafeAreaView,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
-import CustomInput from '../../components/common/CustomInput';
-import CustomButton from '../../components/common/CustomButton';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { colors } from '../../theme/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -27,6 +27,8 @@ const CustomerSignupScreen = ({ navigation }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { customerSignup, isLoading, error, clearError } = useContext(AuthContext);
 
@@ -64,10 +66,18 @@ const CustomerSignupScreen = ({ navigation }) => {
       Alert.alert(
         'Success!',
         'Account created successfully. Welcome to BrewNest!',
-        [{ text: 'Login', onPress: () => navigation.navigate('CustomerLogin') }]
+        [
+          {
+            text: 'Login',
+            onPress: () => navigation.navigate('CustomerLogin'),
+          },
+        ]
       );
     } else {
-      Alert.alert('Signup Failed', result.error || 'Please check your details and try again.');
+      Alert.alert(
+        'Signup Failed',
+        result.error || 'Please check your details and try again.'
+      );
     }
   };
 
@@ -79,221 +89,444 @@ const CustomerSignupScreen = ({ navigation }) => {
     }
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('Welcome');
+    }
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <LoadingSpinner visible={isLoading} />
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.topDecor} />
+        <LoadingSpinner visible={isLoading} />
 
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.8}
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Icon name="chevron-left" size={30} color={colors.primary} />
-        </TouchableOpacity>
+          <View style={styles.screen}>
+            <View style={styles.topCircle} />
 
-        <View style={styles.header}>
-          <Text style={styles.logo}>BrewNest</Text>
-
-          <View style={styles.iconContainer}>
-            <Icon name="account-plus-outline" size={64} color={colors.primary} />
-          </View>
-
-          <Text style={styles.title}>Sign Up</Text>
-          <Text style={styles.subtitle}>Create your coffee account</Text>
-        </View>
-
-        <View style={styles.formCard}>
-          <CustomInput
-            label="Full Name"
-            value={formData.fullName}
-            onChangeText={(text) => updateField('fullName', text)}
-            placeholder="Enter your full name"
-            error={errors.fullName}
-            icon={<Icon name="account-outline" size={20} color={colors.textLight} />}
-            required
-          />
-
-          <CustomInput
-            label="Email Address"
-            value={formData.email}
-            onChangeText={(text) => updateField('email', text)}
-            placeholder="Enter your email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-            icon={<Icon name="email-outline" size={20} color={colors.textLight} />}
-            required
-          />
-
-          <CustomInput
-            label="Phone Number"
-            value={formData.phoneNumber}
-            onChangeText={(text) => updateField('phoneNumber', text)}
-            placeholder="Enter your phone number"
-            keyboardType="phone-pad"
-            error={errors.phoneNumber}
-            icon={<Icon name="phone-outline" size={20} color={colors.textLight} />}
-          />
-
-          <CustomInput
-            label="Password"
-            value={formData.password}
-            onChangeText={(text) => updateField('password', text)}
-            placeholder="Create a password"
-            secureTextEntry
-            error={errors.password}
-            icon={<Icon name="lock-outline" size={20} color={colors.textLight} />}
-            required
-          />
-
-          <CustomInput
-            label="Confirm Password"
-            value={formData.confirmPassword}
-            onChangeText={(text) => updateField('confirmPassword', text)}
-            placeholder="Confirm your password"
-            secureTextEntry
-            error={errors.confirmPassword}
-            icon={<Icon name="lock-check-outline" size={20} color={colors.textLight} />}
-            required
-          />
-
-          {error && <Text style={styles.errorMessage}>{error}</Text>}
-
-          <CustomButton
-            title="Sign Up"
-            onPress={handleSignup}
-            type="primary"
-            loading={isLoading}
-            style={styles.signupButton}
-          />
-
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('CustomerLogin')}>
-              <Text style={styles.loginLink}>Sign In</Text>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBack}
+              activeOpacity={0.8}
+            >
+              <Icon name="chevron-left" size={25} color={colors.primary} />
             </TouchableOpacity>
+
+            <Text style={styles.logoText}>BrewNest</Text>
+
+            <View style={styles.iconCircle}>
+              <Icon name="account-plus-outline" size={48} color={colors.primary} />
+            </View>
+
+            <View style={styles.leafDecor}>
+              <Icon name="leaf" size={26} color="#E2C49F" />
+              <Icon
+                name="leaf"
+                size={22}
+                color="#E2C49F"
+                style={styles.leafSmall}
+              />
+            </View>
+
+            <Text style={styles.title}>Sign Up</Text>
+            <Text style={styles.subtitle}>Create your coffee account</Text>
+
+            <View style={styles.formCard}>
+              <Text style={styles.label}>Full Name</Text>
+
+              <View style={[styles.inputBox, errors.fullName && styles.inputError]}>
+                <Icon name="account-outline" size={19} color={colors.primaryLight} />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your full name"
+                  placeholderTextColor={colors.textLight}
+                  value={formData.fullName}
+                  onChangeText={(text) => updateField('fullName', text)}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  selectionColor={colors.primary}
+                  underlineColorAndroid="transparent"
+                />
+              </View>
+
+              {errors.fullName ? (
+                <Text style={styles.validationText}>{errors.fullName}</Text>
+              ) : null}
+
+              <Text style={[styles.label, styles.fieldLabel]}>Email Address</Text>
+
+              <View style={[styles.inputBox, errors.email && styles.inputError]}>
+                <Icon name="email-outline" size={19} color={colors.primaryLight} />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor={colors.textLight}
+                  value={formData.email}
+                  onChangeText={(text) => updateField('email', text)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  selectionColor={colors.primary}
+                  underlineColorAndroid="transparent"
+                />
+              </View>
+
+              {errors.email ? (
+                <Text style={styles.validationText}>{errors.email}</Text>
+              ) : null}
+
+              <Text style={[styles.label, styles.fieldLabel]}>
+                Phone Number <Text style={styles.optionalText}>(Optional)</Text>
+              </Text>
+
+              <View style={[styles.inputBox, errors.phoneNumber && styles.inputError]}>
+                <Icon name="phone-outline" size={19} color={colors.primaryLight} />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your phone number"
+                  placeholderTextColor={colors.textLight}
+                  value={formData.phoneNumber}
+                  onChangeText={(text) => updateField('phoneNumber', text)}
+                  keyboardType="phone-pad"
+                  autoCorrect={false}
+                  selectionColor={colors.primary}
+                  underlineColorAndroid="transparent"
+                />
+              </View>
+
+              {errors.phoneNumber ? (
+                <Text style={styles.validationText}>{errors.phoneNumber}</Text>
+              ) : null}
+
+              <Text style={[styles.label, styles.fieldLabel]}>Password</Text>
+
+              <View style={[styles.inputBox, errors.password && styles.inputError]}>
+                <Icon name="lock-outline" size={19} color={colors.primaryLight} />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Create a password"
+                  placeholderTextColor={colors.textLight}
+                  value={formData.password}
+                  onChangeText={(text) => updateField('password', text)}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  selectionColor={colors.primary}
+                  underlineColorAndroid="transparent"
+                />
+
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  activeOpacity={0.8}
+                >
+                  <Icon
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={19}
+                    color={colors.primaryLight}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {errors.password ? (
+                <Text style={styles.validationText}>{errors.password}</Text>
+              ) : null}
+
+              <Text style={[styles.label, styles.fieldLabel]}>Confirm Password</Text>
+
+              <View style={[styles.inputBox, errors.confirmPassword && styles.inputError]}>
+                <Icon name="lock-check-outline" size={19} color={colors.primaryLight} />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm your password"
+                  placeholderTextColor={colors.textLight}
+                  value={formData.confirmPassword}
+                  onChangeText={(text) => updateField('confirmPassword', text)}
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  selectionColor={colors.primary}
+                  underlineColorAndroid="transparent"
+                />
+
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  activeOpacity={0.8}
+                >
+                  <Icon
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={19}
+                    color={colors.primaryLight}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {errors.confirmPassword ? (
+                <Text style={styles.validationText}>{errors.confirmPassword}</Text>
+              ) : null}
+
+              {error ? <Text style={styles.errorMessage}>{error}</Text> : null}
+
+              <TouchableOpacity
+                style={styles.signUpButton}
+                onPress={handleSignup}
+                activeOpacity={0.85}
+                disabled={isLoading}
+              >
+                <Text style={styles.signUpText}>
+                  {isLoading ? 'Creating Account...' : 'Sign Up'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.loginContainer}>
+              <Text style={styles.loginText}>Already have an account? </Text>
+
+              <TouchableOpacity onPress={() => navigation.navigate('CustomerLogin')}>
+                <Text style={styles.loginLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.bottomLeaf}>
+              <Icon name="leaf-maple" size={27} color={colors.secondary} />
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
+const PHONE_WIDTH = 390;
+
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
   },
+
+  keyboardView: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
   scrollContainer: {
     flexGrow: 1,
-    padding: 24,
-    paddingBottom: 34,
+    backgroundColor: colors.background,
+    alignItems: 'center',
   },
-  topDecor: {
+
+  screen: {
+    flex: 1,
+    width: '100%',
+    maxWidth: PHONE_WIDTH,
+    minHeight: 790,
+    backgroundColor: colors.background,
+    paddingHorizontal: 14,
+    paddingTop: Platform.OS === 'android' ? 14 : 18,
+    paddingBottom: 28,
+    alignSelf: 'center',
+    overflow: 'hidden',
+  },
+
+  topCircle: {
     position: 'absolute',
-    width: 210,
-    height: 210,
-    borderRadius: 120,
-    backgroundColor: colors.secondaryLight,
-    top: -110,
-    right: -90,
-    opacity: 0.5,
+    width: 170,
+    height: 170,
+    borderRadius: 90,
+    backgroundColor: '#E8CBAA',
+    top: -70,
+    right: -65,
+    opacity: 0.52,
   },
+
   backButton: {
-    marginTop: Platform.OS === 'ios' ? 8 : 16,
     width: 42,
     height: 42,
-    borderRadius: 22,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 10,
+    backgroundColor: '#FFF4E4',
     borderWidth: 1,
     borderColor: colors.border,
-  },
-  header: {
-    alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 24,
-  },
-  logo: {
-    fontSize: 30,
-    fontWeight: '900',
-    color: colors.primary,
-    marginBottom: 18,
-  },
-  iconContainer: {
-    width: 102,
-    height: 102,
-    borderRadius: 56,
-    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 4,
+  },
+
+  logoText: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 30 : 30,
+    alignSelf: 'center',
+    fontSize: 20,
+    fontWeight: '900',
+    color: colors.primary,
+    fontStyle: 'italic',
+  },
+
+  iconCircle: {
+    width: 86,
+    height: 86,
+    borderRadius: 46,
+    backgroundColor: '#F8E8D4',
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 6,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 12,
   },
+
+  leafDecor: {
+    position: 'absolute',
+    top: 135,
+    right: 30,
+    opacity: 0.38,
+    transform: [{ rotate: '-24deg' }],
+  },
+
+  leafSmall: {
+    marginLeft: 15,
+    marginTop: -5,
+  },
+
   title: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: '900',
     color: colors.textPrimary,
-    marginTop: 18,
+    textAlign: 'center',
+    marginTop: 12,
   },
+
   subtitle: {
-    fontSize: 15,
+    fontSize: 13,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginTop: 6,
+    marginTop: 5,
+    marginBottom: 14,
   },
+
   formCard: {
     backgroundColor: '#F8E8D4',
-    borderRadius: 30,
-    padding: 22,
+    borderRadius: 18,
+    paddingHorizontal: 15,
+    paddingTop: 14,
+    paddingBottom: 15,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 4,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
   },
-  signupButton: {
-    marginTop: 12,
-    marginBottom: 22,
+
+  label: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 5,
   },
+
+  fieldLabel: {
+    marginTop: 8,
+  },
+
+  optionalText: {
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+
+  inputBox: {
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: '#FFF9F1',
+    borderWidth: 1,
+    borderColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+
+  inputError: {
+    borderColor: colors.error,
+  },
+
+  input: {
+    flex: 1,
+    height: '100%',
+    marginLeft: 10,
+    fontSize: 13,
+    color: colors.textPrimary,
+    backgroundColor: 'transparent',
+    outlineStyle: 'none',
+  },
+
+  validationText: {
+    fontSize: 10,
+    color: colors.error,
+    marginTop: 4,
+    marginLeft: 2,
+    fontWeight: '600',
+  },
+
+  errorMessage: {
+    color: colors.error,
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 10,
+    fontWeight: '700',
+  },
+
+  signUpButton: {
+    height: 50,
+    borderRadius: 11,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 14,
+  },
+
+  signUpText: {
+    color: colors.textWhite,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 16,
   },
+
   loginText: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '500',
   },
+
   loginLink: {
-    fontSize: 14,
     color: colors.primary,
+    fontSize: 13,
     fontWeight: '900',
   },
-  errorMessage: {
-    color: colors.error,
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 12,
-    fontWeight: '600',
+
+  bottomLeaf: {
+    alignItems: 'center',
+    marginTop: 34,
+    opacity: 0.7,
   },
 });
 
