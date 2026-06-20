@@ -1,25 +1,23 @@
 {
   "expo": {
-    "name": "BrewNest Cafe",
+    "name": "BrewNest",
     "slug": "brewnest",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "sdkVersion": "54.0.0",
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brewnest.cafe"
+      "bundleIdentifier": "com.brewnest.app"
     },
     "android": {
-      "package": "com.brewnest.cafe",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      }
+      "package": "com.brewnest.app"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
     }
   }
 }

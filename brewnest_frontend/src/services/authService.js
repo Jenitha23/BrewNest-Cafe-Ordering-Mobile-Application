@@ -1,57 +1,61 @@
-// src/services/authService.js
-import api from './api';
+// src/services/api.js
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@env';
 
-export const authService = {
-  // Customer Signup
-  async customerSignup(userData) {
-    const response = await api.post('/customer/auth/signup', userData);
-    return response.data;
+const api = axios.create({
+  baseURL: API_BASE_URL || 'http://localhost:8080/api',
+  headers: {
+    'Content-Type': 'application/json',
   },
+  timeout: 30000,
+});
 
-  // Customer Login
-  async customerLogin(email, password) {
-    const response = await api.post('/customer/auth/login', { email, password });
-    if (response.data.success && response.data.data.token) {
-      await this.storeAuthData(response.data.data);
+// Request interceptor - Add token to every request
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('Token added to request:', config.url);
     }
-    return response.data;
+    return config;
   },
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
 
-  // Admin Login
-  async adminLogin(email, password) {
-    const response = await api.post('/admin/auth/login', { email, password });
-    if (response.data.success && response.data.data.token) {
-      await this.storeAuthData(response.data.data);
+// Response interceptor - Handle 401 errors
+api.interceptors.response.use(
+  (response) => {
+    console.log('Response received:', response.config.url, response.status);
+    return response;
+  },
+  async (error) => {
+    if (error.response) {
+      console.error('API Error:', error.response.status, error.response.data);
+      
+      // If unauthorized (401), clear storage and redirect
+      if (error.response.status === 401) {
+        console.log('Unauthorized access - clearing storage');
+        await AsyncStorage.removeItem('authToken');
+        await AsyncStorage.removeItem('userData');
+        
+        // You can dispatch a custom event or handle logout here
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('auth:logout'));
+        }
+      }
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Request error:', error.message);
     }
-    return response.data;
-  },
+    
+    return Promise.reject(error);
+  }
+);
 
-  // Store auth data
-  async storeAuthData(authData) {
-    await AsyncStorage.setItem('authToken', authData.token);
-    await AsyncStorage.setItem('userData', JSON.stringify({
-      id: authData.id,
-      email: authData.email,
-      fullName: authData.fullName,
-      role: authData.role,
-    }));
-  },
-
-  // Logout
-  async logout() {
-    await AsyncStorage.removeItem('authToken');
-    await AsyncStorage.removeItem('userData');
-  },
-
-  // Get current user
-  async getCurrentUser() {
-    const userData = await AsyncStorage.getItem('userData');
-    return userData ? JSON.parse(userData) : null;
-  },
-
-  // Get auth token
-  async getAuthToken() {
-    return await AsyncStorage.getItem('authToken');
-  },
-};
+export default api;
