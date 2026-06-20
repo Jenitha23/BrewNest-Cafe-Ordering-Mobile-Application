@@ -21,8 +21,7 @@ const CustomerLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-  
+
   const { customerLogin, isLoading, error, clearError } = useContext(AuthContext);
 
   const validateForm = () => {
@@ -39,14 +38,14 @@ const CustomerLoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     clearError();
+
     if (!validateForm()) return;
 
     const result = await customerLogin({ email, password });
-    
+
     if (!result.success) {
-      Alert.alert('Login Failed', result.error);
+      Alert.alert('Login Failed', result.error || 'Please check your email and password.');
     }
-    // Navigation handled by RootNavigator based on auth state
   };
 
   return (
@@ -55,26 +54,34 @@ const CustomerLoginScreen = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <LoadingSpinner visible={isLoading} />
+
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.topDecor} />
+
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
         >
-          <Icon name="arrow-left" size={24} color={colors.primary} />
+          <Icon name="chevron-left" size={30} color={colors.primary} />
         </TouchableOpacity>
 
         <View style={styles.header}>
+          <Text style={styles.logo}>BrewNest</Text>
+
           <View style={styles.iconContainer}>
-            <Icon name="coffee-outline" size={60} color={colors.primary} />
+            <Icon name="coffee-outline" size={64} color={colors.primary} />
           </View>
-          <Text style={styles.title}>Welcome Back!</Text>
-          <Text style={styles.subtitle}>Login to your customer account</Text>
+
+          <Text style={styles.title}>Sign In</Text>
+          <Text style={styles.subtitle}>Welcome back, coffee lover</Text>
         </View>
 
-        <View style={styles.form}>
+        <View style={styles.formCard}>
           <CustomInput
             label="Email Address"
             value={email}
@@ -84,6 +91,7 @@ const CustomerLoginScreen = ({ navigation }) => {
             }}
             placeholder="Enter your email"
             keyboardType="email-address"
+            autoCapitalize="none"
             error={errors.email}
             icon={<Icon name="email-outline" size={20} color={colors.textLight} />}
             required
@@ -97,16 +105,20 @@ const CustomerLoginScreen = ({ navigation }) => {
               if (errors.password) setErrors({ ...errors, password: null });
             }}
             placeholder="Enter your password"
-            secureTextEntry={!showPassword}
+            secureTextEntry
             error={errors.password}
             icon={<Icon name="lock-outline" size={20} color={colors.textLight} />}
             required
           />
 
+          <TouchableOpacity style={styles.forgotContainer} activeOpacity={0.8}>
+            <Text style={styles.forgotText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
           {error && <Text style={styles.errorMessage}>{error}</Text>}
 
           <CustomButton
-            title="Login"
+            title="Sign In"
             onPress={handleLogin}
             type="primary"
             loading={isLoading}
@@ -120,6 +132,8 @@ const CustomerLoginScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
+
+        <Text style={styles.bottomCoffee}>☕</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -134,41 +148,90 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 24,
   },
+  topDecor: {
+    position: 'absolute',
+    width: 210,
+    height: 210,
+    borderRadius: 120,
+    backgroundColor: colors.secondaryLight,
+    top: -110,
+    right: -90,
+    opacity: 0.5,
+  },
   backButton: {
     marginTop: Platform.OS === 'ios' ? 8 : 16,
-    marginBottom: 16,
-    width: 40,
+    width: 42,
+    height: 42,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginTop: 18,
+    marginBottom: 28,
+  },
+  logo: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: colors.primary,
+    marginBottom: 22,
   },
   iconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.primaryLight + '20',
+    width: 108,
+    height: 108,
+    borderRadius: 58,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 6,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontWeight: '900',
     color: colors.textPrimary,
-    marginBottom: 8,
+    marginTop: 22,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textSecondary,
     textAlign: 'center',
+    marginTop: 6,
   },
-  form: {
-    flex: 1,
+  formCard: {
+    backgroundColor: '#F8E8D4',
+    borderRadius: 30,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 4,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+  },
+  forgotContainer: {
+    alignSelf: 'flex-end',
+    marginTop: -2,
+    marginBottom: 8,
+  },
+  forgotText: {
+    fontSize: 13,
+    color: colors.primaryLight,
+    fontWeight: '700',
   },
   loginButton: {
-    marginTop: 16,
-    marginBottom: 24,
+    marginTop: 12,
+    marginBottom: 22,
   },
   signupContainer: {
     flexDirection: 'row',
@@ -182,13 +245,19 @@ const styles = StyleSheet.create({
   signupLink: {
     fontSize: 14,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: '900',
   },
   errorMessage: {
     color: colors.error,
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+    fontWeight: '600',
+  },
+  bottomCoffee: {
+    textAlign: 'center',
+    fontSize: 30,
+    marginTop: 24,
   },
 });
 

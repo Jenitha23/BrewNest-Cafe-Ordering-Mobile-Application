@@ -1,39 +1,30 @@
 export const colors = {
-  // Primary Colors
-  primary: '#4A2B1B',      // Rich coffee brown
-  primaryLight: '#6B4226',
-  primaryDark: '#2D1A10',
-  
-  // Secondary Colors
-  secondary: '#D4A373',     // Warm caramel
-  secondaryLight: '#E2C099',
-  secondaryDark: '#B8834F',
-  
-  // Accent Colors
-  accent: '#E76F51',        // Terracotta
-  accentLight: '#F4A261',
-  
-  // Neutral Colors
-  background: '#FFF9F5',
-  surface: '#FFFFFF',
-  error: '#E63946',
-  success: '#2A9D8F',
-  warning: '#F4A261',
-  info: '#457B9D',
-  
-  // Text Colors
-  textPrimary: '#2C1810',
-  textSecondary: '#6B5B4F',
-  textLight: '#9E8B7A',
+  primary: '#3B1F12',
+  primaryLight: '#7A4A2E',
+  secondary: '#C58A5A',
+  secondaryLight: '#E8CBAA',
+  accent: '#A86F3D',
+
+  background: '#F4E5CF',
+  backgroundLight: '#FFF7EC',
+  surface: '#FFF7EC',
+  card: '#FFF7EC',
+
+  textPrimary: '#2B160D',
+  textSecondary: '#7B6256',
+  textLight: '#9A8173',
   textWhite: '#FFFFFF',
-  
-  // Border Colors
-  border: '#E8DCD2',
-  borderDark: '#D4C4B4',
-  
-  // Gradients
-  gradientStart: '#4A2B1B',
-  gradientEnd: '#2D1A10',
+
+  border: '#E4C9AD',
+
+  success: '#2E7D32',
+  error: '#C0392B',
+  warning: '#E67E22',
+  info: '#6D4C41',
+
+  shadow: '#000000',
+  transparentBrown: 'rgba(59, 31, 18, 0.12)',
+  overlay: 'rgba(59, 31, 18, 0.55)',
 };
 
 export default colors;
