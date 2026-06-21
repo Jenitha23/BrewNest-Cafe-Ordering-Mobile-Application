@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
+  StyleSheet,  
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -11,6 +10,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { getImageUrl, menuApi } from '../../api/menuApi';
@@ -58,8 +58,10 @@ const AdminMenuManagementScreen = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    loadItems().catch(() => {});
-  }, [selectedStatus, selectedCategoryId]);
+  if (!categories.length) return;
+
+  loadItems().catch(() => {});
+}, [selectedStatus, selectedCategoryId, categories]);
 
   const handleDelete = (item) => {
     Alert.alert(
@@ -149,7 +151,16 @@ const AdminMenuManagementScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+        <ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  style={styles.filterScroll}
+  contentContainerStyle={{ 
+    paddingVertical: 8,
+    alignItems: 'center',   
+    paddingRight: 20,
+  }}
+>
           {statuses.map((status) => (
             <TouchableOpacity
               key={status}
@@ -171,7 +182,16 @@ const AdminMenuManagementScreen = ({ navigation }) => {
           ))}
         </ScrollView>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+        <ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  style={styles.filterScroll}
+  contentContainerStyle={{ 
+    paddingVertical: 2,
+    alignItems: 'center',     
+    paddingRight: 20,
+  }}
+>
           <TouchableOpacity
             style={[
               styles.filterChip,
@@ -310,6 +330,8 @@ const styles = StyleSheet.create({
     maxWidth: PHONE_WIDTH,
     alignSelf: 'center',
     padding: 18,
+    paddingBottom: 18,
+    paddingTop: 12,
     backgroundColor: colors.background,
   },
 
@@ -386,35 +408,42 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
 
-  filterScroll: {
-    marginTop: 14,
-  },
+ filterScroll: {
+  marginTop: 12,
+  overflow: 'visible',
+},
 
-  filterChip: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginRight: 9,
-  },
+filterChip: {
+  backgroundColor: colors.surface,
+  borderWidth: 1,
+  borderColor: colors.border,
 
-  activeFilterChip: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
+  
+  height: 38,
+  paddingHorizontal: 16,
 
-  filterText: {
-    color: colors.primaryLight,
-    fontSize: 12,
-    fontWeight: '800',
-  },
+  borderRadius: 19,
 
-  activeFilterText: {
-    color: colors.textWhite,
-  },
+  justifyContent: 'center',
+  alignItems: 'center',
 
+  marginRight: 8,
+},
+
+filterText: {
+  fontSize: 14,
+  fontWeight: '800',
+  color: colors.primaryLight,
+},
+
+activeFilterChip: {
+  backgroundColor: colors.primary,
+  borderColor: colors.primary,
+},
+
+activeFilterText: {
+  color: colors.textWhite,
+},
   itemCard: {
     backgroundColor: colors.surface,
     borderRadius: 22,
