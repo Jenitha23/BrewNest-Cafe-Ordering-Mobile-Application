@@ -192,6 +192,34 @@ const AdminDashboard = ({ navigation }) => {
             </Text>
           </View>
         </View>
+        <TouchableOpacity
+  style={styles.menuCard}
+  onPress={() => navigation.navigate('AdminOrders')}
+>
+  <View style={styles.iconBox}>
+    <Icon
+      name="clipboard-list"
+      size={30}
+      color={colors.primary}
+    />
+  </View>
+
+  <View style={styles.cardContent}>
+    <Text style={styles.cardTitle}>
+      Order Management
+    </Text>
+
+    <Text style={styles.cardDescription}>
+      View and update customer orders
+    </Text>
+  </View>
+
+  <Icon
+    name="chevron-right"
+    size={24}
+    color={colors.textLight}
+  />
+</TouchableOpacity>
 
         {/* Management */}
 

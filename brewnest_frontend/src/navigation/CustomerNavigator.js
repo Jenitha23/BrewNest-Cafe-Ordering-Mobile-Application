@@ -14,6 +14,9 @@ import SettingsScreen from '../screens/customer/SettingsScreen';
 import MenuItemDetailsScreen from '../screens/customer/MenuItemDetailsScreen';
 import CartScreen from '../screens/customer/CartScreen';
 
+import CustomerOrdersScreen from '../screens/customer/CustomerOrdersScreen';
+import CustomerOrderDetailsScreen from '../screens/customer/CustomerOrderDetailsScreen';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -41,9 +44,15 @@ const MenuStack = () => {
 const OrdersStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="OrdersDashboard" component={CustomerDashboard} />
-      <Stack.Screen name="MenuItemDetails" component={MenuItemDetailsScreen} />
-      <Stack.Screen name="Cart" component={CartScreen} />
+      <Stack.Screen
+        name="CustomerOrders"
+        component={CustomerOrdersScreen}
+      />
+
+      <Stack.Screen
+        name="OrderDetails"
+        component={CustomerOrderDetailsScreen}
+      />
     </Stack.Navigator>
   );
 };
