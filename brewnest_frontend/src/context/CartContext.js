@@ -1,74 +1,147 @@
-import React, { createContext, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useMemo,
+} from 'react';
+
+import { cartApi } from '../api/cartApi';
 
 export const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const addToCart = (item, quantity = 1) => {
-    setCartItems((previousItems) => {
-      const existingItem = previousItems.find((cartItem) => cartItem.id === item.id);
+  const loadCart = async () => {
+    try {
+      setLoading(true);
 
-      if (existingItem) {
-        return previousItems.map((cartItem) =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + quantity }
-            : cartItem
+      const data = await cartApi.getCart();
+
+      setCart(data);
+    } catch (error) {
+      console.log(
+        'Load Cart Error:',
+        error.response?.data || error.message
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const addToCart = async (item, quantity = 1) => {
+    try {
+      await cartApi.addToCart(
+        item.id,
+        quantity
+      );
+
+      await loadCart();
+    } catch (error) {
+      console.log(
+        'Add To Cart Error:',
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const increaseQuantity = async (
+    cartItemId,
+    currentQuantity
+  ) => {
+    try {
+      await cartApi.updateQuantity(
+        cartItemId,
+        currentQuantity + 1
+      );
+
+      await loadCart();
+    } catch (error) {
+      console.log(
+        'Increase Quantity Error:',
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const decreaseQuantity = async (
+    cartItemId,
+    currentQuantity
+  ) => {
+    try {
+      const newQuantity = currentQuantity - 1;
+
+      if (newQuantity <= 0) {
+        await cartApi.removeItem(cartItemId);
+      } else {
+        await cartApi.updateQuantity(
+          cartItemId,
+          newQuantity
         );
       }
 
-      return [
-        ...previousItems,
-        {
-          ...item,
-          quantity,
-        },
-      ];
-    });
+      await loadCart();
+    } catch (error) {
+      console.log(
+        'Decrease Quantity Error:',
+        error.response?.data || error.message
+      );
+    }
   };
 
-  const increaseQuantity = (id) => {
-    setCartItems((previousItems) =>
-      previousItems.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  const removeFromCart = async (cartItemId) => {
+    try {
+      await cartApi.removeItem(cartItemId);
+
+      await loadCart();
+    } catch (error) {
+      console.log(
+        'Remove Cart Item Error:',
+        error.response?.data || error.message
+      );
+    }
   };
 
-  const decreaseQuantity = (id) => {
-    setCartItems((previousItems) =>
-      previousItems
-        .map((item) =>
-          item.id === id ? { ...item, quantity: Math.max(item.quantity - 1, 1) } : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
+  const clearCart = async () => {
+    try {
+      await cartApi.clearCart();
+
+      await loadCart();
+    } catch (error) {
+      console.log(
+        'Clear Cart Error:',
+        error.response?.data || error.message
+      );
+    }
   };
 
-  const removeFromCart = (id) => {
-    setCartItems((previousItems) => previousItems.filter((item) => item.id !== id));
-  };
-
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  const cartItems = useMemo(() => {
+    return cart?.items || [];
+  }, [cart]);
 
   const totalAmount = useMemo(() => {
-    return cartItems.reduce((total, item) => {
-      return total + Number(item.price || 0) * item.quantity;
-    }, 0);
-  }, [cartItems]);
+    return cart?.totalAmount || 0;
+  }, [cart]);
 
   const totalItems = useMemo(() => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  }, [cartItems]);
+    return cart?.totalItems || 0;
+  }, [cart]);
 
   return (
     <CartContext.Provider
       value={{
+        cart,
         cartItems,
         totalAmount,
         totalItems,
+        loading,
+
+        loadCart,
         addToCart,
         increaseQuantity,
         decreaseQuantity,
