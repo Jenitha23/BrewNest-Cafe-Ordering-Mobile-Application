@@ -1,0 +1,29 @@
+CREATE TABLE carts (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE,
+    created_at DATETIME2,
+    updated_at DATETIME2
+);
+
+CREATE TABLE cart_items (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    cart_id BIGINT NOT NULL,
+    menu_item_id BIGINT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL
+);
+
+ALTER TABLE carts
+ADD CONSTRAINT FK_CART_USER
+FOREIGN KEY (user_id)
+REFERENCES users(id);
+
+ALTER TABLE cart_items
+ADD CONSTRAINT FK_CARTITEM_CART
+FOREIGN KEY (cart_id)
+REFERENCES carts(id);
+
+ALTER TABLE cart_items
+ADD CONSTRAINT FK_CARTITEM_MENU
+FOREIGN KEY (menu_item_id)
+REFERENCES menu_items(id);
