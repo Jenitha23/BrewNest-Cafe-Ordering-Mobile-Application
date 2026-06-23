@@ -17,13 +17,14 @@ import { getImageUrl } from '../../api/menuApi';
 
 const CartScreen = ({ navigation }) => {
   const {
-    cartItems,
-    totalAmount,
-    increaseQuantity,
-    decreaseQuantity,
-    removeFromCart,
-    clearCart,
-  } = useContext(CartContext);
+  cartItems,
+  totalAmount,
+  totalItems,
+  increaseQuantity,
+  decreaseQuantity,
+  removeFromCart,
+  clearCart,
+} = useContext(CartContext);
 
   const handleCheckout = () => {
     Alert.alert('Next Feature', 'Checkout and order placement will be implemented next.');
@@ -88,7 +89,7 @@ const CartScreen = ({ navigation }) => {
             contentContainerStyle={styles.scrollContent}
           >
             {cartItems.map((item) => (
-              <View key={item.id} style={styles.cartItem}>
+              <View key={item.cartItemId} style={styles.cartItem}>
                 <View style={styles.imageBox}>
                   {item.imageUrl ? (
                     <Image source={{ uri: getImageUrl(item.imageUrl) }} style={styles.image} />
@@ -113,7 +114,7 @@ const CartScreen = ({ navigation }) => {
                   <View style={styles.quantityRow}>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => decreaseQuantity(item.id)}
+                      onPress={() => decreaseQuantity(item.cartItemId, item.quantity)}
                       activeOpacity={0.8}
                     >
                       <Icon name="minus" size={16} color={colors.primary} />
@@ -123,7 +124,7 @@ const CartScreen = ({ navigation }) => {
 
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => increaseQuantity(item.id)}
+                      onPress={() => increaseQuantity(item.cartItemId, item.quantity)}
                       activeOpacity={0.8}
                     >
                       <Icon name="plus" size={16} color={colors.primary} />
@@ -131,7 +132,7 @@ const CartScreen = ({ navigation }) => {
                   </View>
                 </View>
 
-                <TouchableOpacity onPress={() => removeFromCart(item.id)}>
+                <TouchableOpacity onPress={() => removeFromCart(item.cartItemId)}>
                   <Icon name="close-circle" size={24} color={colors.error} />
                 </TouchableOpacity>
               </View>
@@ -142,7 +143,7 @@ const CartScreen = ({ navigation }) => {
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Subtotal</Text>
-                <Text style={styles.summaryValue}>Rs. {totalAmount.toFixed(0)}</Text>
+                <Text style={styles.summaryValue}>Rs. {totalItems}</Text>
               </View>
 
               <View style={styles.summaryRow}>
