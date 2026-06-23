@@ -8,6 +8,9 @@ import AdminMenuItemFormScreen from '../screens/admin/AdminMenuItemFormScreen';
 import AdminUsersScreen from '../screens/admin/AdminUsersScreen';
 import AdminSettingsScreen from '../screens/admin/AdminSettingsScreen';
 
+import AdminOrdersScreen from '../screens/admin/AdminOrdersScreen';
+import AdminOrderDetailsScreen from '../screens/admin/AdminOrderDetailsScreen';
+
 const Stack = createStackNavigator();
 
 const AdminNavigator = () => {
@@ -58,6 +61,16 @@ const AdminNavigator = () => {
       <Stack.Screen
         name="AdminUsers"
         component={AdminUsersScreen}
+      />
+            {/* Orders */}
+      <Stack.Screen
+        name="AdminOrders"
+        component={AdminOrdersScreen}
+      />
+
+      <Stack.Screen
+        name="AdminOrderDetails"
+        component={AdminOrderDetailsScreen}
       />
 
       {/* Settings */}

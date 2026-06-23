@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { CartContext } from '../../context/CartContext';
 import { getImageUrl } from '../../api/menuApi';
+import { orderApi } from '../../api/orderApi';
 
 const CartScreen = ({ navigation }) => {
   const {
@@ -26,10 +27,28 @@ const CartScreen = ({ navigation }) => {
   clearCart,
 } = useContext(CartContext);
 
-  const handleCheckout = () => {
-    Alert.alert('Next Feature', 'Checkout and order placement will be implemented next.');
-  };
+const handleCheckout = async () => {
+  try {
+    const order = await orderApi.placeOrder('CASH');
 
+    Alert.alert(
+      'Success',
+      `Order #${order.orderId} placed successfully`
+    );
+
+    clearCart();
+
+    navigation.navigate('Orders');
+  } catch (error) {
+    console.log('Place Order Error:', error);
+
+    Alert.alert(
+      'Error',
+      error?.response?.data?.message ||
+        'Failed to place order'
+    );
+  }
+};
   const handleClearCart = () => {
     if (cartItems.length === 0) return;
 
