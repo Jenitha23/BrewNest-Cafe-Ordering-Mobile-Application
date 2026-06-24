@@ -20,6 +20,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 
 
 @Entity
@@ -43,6 +44,9 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+    @Embedded
+    private Address deliveryAddress;
 
     private BigDecimal totalAmount;
 

@@ -26,6 +26,7 @@ import com.brewnest.repository.UserRepository;
 import com.brewnest.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
+import com.brewnest.entity.Address;
 
 
 @Service
@@ -52,12 +53,23 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        Order order = Order.builder()
-                .customer(user)
-                .paymentMethod(request.getPaymentMethod())
-                .status(OrderStatus.PENDING)
-                .items(new ArrayList<>())
-                .build();
+        Address address = new Address();
+
+address.setFullName(request.getFullName());
+address.setPhoneNumber(request.getPhoneNumber());
+address.setAddressLine1(request.getAddressLine1());
+address.setAddressLine2(request.getAddressLine2());
+address.setCity(request.getCity());
+address.setDistrict(request.getDistrict());
+address.setPostalCode(request.getPostalCode());
+
+Order order = Order.builder()
+        .customer(user)
+        .paymentMethod(request.getPaymentMethod())
+        .deliveryAddress(address)
+        .status(OrderStatus.PENDING)
+        .items(new ArrayList<>())
+        .build();
 
         for (CartItem cartItem : cart.getItems()) {
 
@@ -195,12 +207,49 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return OrderResponse.builder()
-                .orderId(order.getId())
-                .status(order.getStatus())
-                .paymentMethod(order.getPaymentMethod())
-                .totalAmount(order.getTotalAmount())
-                .orderedAt(order.getOrderedAt())
-                .items(items)
-                .build();
+        .orderId(order.getId())
+        .status(order.getStatus())
+        .paymentMethod(order.getPaymentMethod())
+        .totalAmount(order.getTotalAmount())
+        .orderedAt(order.getOrderedAt())
+
+        .fullName(
+                order.getDeliveryAddress() != null
+                        ? order.getDeliveryAddress().getFullName()
+                        : null
+        )
+        .phoneNumber(
+                order.getDeliveryAddress() != null
+                        ? order.getDeliveryAddress().getPhoneNumber()
+                        : null
+        )
+        .addressLine1(
+                order.getDeliveryAddress() != null
+                        ? order.getDeliveryAddress().getAddressLine1()
+                        : null
+        )
+        .addressLine2(
+                order.getDeliveryAddress() != null
+                        ? order.getDeliveryAddress().getAddressLine2()
+                        : null
+        )
+        .city(
+                order.getDeliveryAddress() != null
+                        ? order.getDeliveryAddress().getCity()
+                        : null
+        )
+        .district(
+                order.getDeliveryAddress() != null
+                        ? order.getDeliveryAddress().getDistrict()
+                        : null
+        )
+        .postalCode(
+                order.getDeliveryAddress() != null
+                        ? order.getDeliveryAddress().getPostalCode()
+                        : null
+        )
+
+        .items(items)
+        .build();
     }
 }

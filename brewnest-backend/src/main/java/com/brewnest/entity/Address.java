@@ -1,13 +1,11 @@
-package com.brewnest.dto.request;
+package com.brewnest.entity;
 
-import com.brewnest.entity.PaymentMethod;
-
+import jakarta.persistence.Embeddable;
 import lombok.Data;
 
 @Data
-public class PlaceOrderRequest {
-
-    private PaymentMethod paymentMethod;
+@Embeddable
+public class Address {
 
     private String fullName;
 
