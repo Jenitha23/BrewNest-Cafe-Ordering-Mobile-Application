@@ -27,28 +27,10 @@ const CartScreen = ({ navigation }) => {
   clearCart,
 } = useContext(CartContext);
 
-const handleCheckout = async () => {
-  try {
-    const order = await orderApi.placeOrder('CASH');
-
-    Alert.alert(
-      'Success',
-      `Order #${order.orderId} placed successfully`
-    );
-
-    clearCart();
-
-    navigation.navigate('Orders');
-  } catch (error) {
-    console.log('Place Order Error:', error);
-
-    Alert.alert(
-      'Error',
-      error?.response?.data?.message ||
-        'Failed to place order'
-    );
-  }
+const handleCheckout = () => {
+  navigation.navigate('Checkout');
 };
+
   const handleClearCart = () => {
     if (cartItems.length === 0) return;
 

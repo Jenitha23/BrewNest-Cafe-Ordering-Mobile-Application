@@ -2,14 +2,14 @@ import apiClient from './client';
 
 export const orderApi = {
 
-  placeOrder: async (paymentMethod) => {
-    const response = await apiClient.post(
-      '/customer/orders',
-      { paymentMethod }
-    );
+  placeOrder: async (orderData) => {
+  const response = await apiClient.post(
+    '/customer/orders',
+    orderData
+  );
 
-    return response.data.data;
-  },
+  return response.data.data;
+},
 
   getMyOrders: async () => {
     const response = await apiClient.get(
