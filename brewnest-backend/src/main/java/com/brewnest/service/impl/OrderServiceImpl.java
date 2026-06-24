@@ -19,11 +19,13 @@ import com.brewnest.entity.CartItem;
 import com.brewnest.entity.Order;
 import com.brewnest.entity.OrderItem;
 import com.brewnest.entity.OrderStatus;
+import com.brewnest.entity.PaymentStatus;
 import com.brewnest.entity.User;
 import com.brewnest.repository.CartRepository;
 import com.brewnest.repository.OrderRepository;
 import com.brewnest.repository.UserRepository;
 import com.brewnest.service.OrderService;
+import com.brewnest.entity.PaymentMethod;
 
 import lombok.RequiredArgsConstructor;
 import com.brewnest.entity.Address;
@@ -66,6 +68,11 @@ address.setPostalCode(request.getPostalCode());
 Order order = Order.builder()
         .customer(user)
         .paymentMethod(request.getPaymentMethod())
+        .paymentStatus(
+                request.getPaymentMethod() == PaymentMethod.CARD
+                        ? PaymentStatus.PAID
+                        : PaymentStatus.PENDING
+        )
         .deliveryAddress(address)
         .status(OrderStatus.PENDING)
         .items(new ArrayList<>())
@@ -210,6 +217,7 @@ Order order = Order.builder()
         .orderId(order.getId())
         .status(order.getStatus())
         .paymentMethod(order.getPaymentMethod())
+        .paymentStatus(order.getPaymentStatus())
         .totalAmount(order.getTotalAmount())
         .orderedAt(order.getOrderedAt())
 

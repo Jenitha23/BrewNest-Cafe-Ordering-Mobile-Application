@@ -23,6 +23,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embedded;
 
 
+
 @Entity
 @Table(name = "orders")
 @Data
@@ -44,6 +45,9 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
     @Embedded
     private Address deliveryAddress;
