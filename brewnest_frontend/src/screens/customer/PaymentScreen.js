@@ -54,15 +54,24 @@ const PaymentScreen = ({ route, navigation }) => {
       await clearCart();
 
       Alert.alert(
-        'Success',
-        `Order #${order.orderId} placed successfully`,
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Customer', {  screen: 'Orders',
-           } ),}
-        ]
-      );
+  'Success',
+  `Order #${order.orderId} placed successfully`,
+  [
+    {
+      text: 'OK',
+      onPress: () =>
+        navigation.replace('Customer', {
+          screen: 'Orders',
+          params: {
+            screen: 'OrderDetails',
+            params: {
+              orderId: order.orderId,
+            },
+          },
+        }),
+    },
+  ]
+);
     } catch (error) {
       Alert.alert(
         'Error',

@@ -135,12 +135,27 @@ const CustomerOrderDetailsScreen = ({ route, navigation }) => {
           </View>
 
           {/* Home Button */}
-          <TouchableOpacity
-            style={styles.homeButton}
-            onPress={() => navigation.navigate('Home')}
-          >
-            <Text style={styles.homeButtonText}>Back Home</Text>
-          </TouchableOpacity>
+          {/* Back Home */}
+<TouchableOpacity
+  style={styles.homeButton}
+  onPress={() => navigation.navigate('Home')}
+>
+  <Text style={styles.homeButtonText}>Back Home</Text>
+</TouchableOpacity>
+
+{/* Order History */}
+<TouchableOpacity
+  style={styles.historyButton}
+  onPress={() =>
+    navigation.navigate('Orders', {
+      screen: 'CustomerOrders',
+    })
+  }
+>
+  <Text style={styles.historyButtonText}>
+    View Order History
+  </Text>
+</TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     </ImageBackground>
@@ -351,6 +366,23 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
+  historyButton: {
+  marginTop: 12,
+  height: 54,
+  borderRadius: 30,
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderWidth: 2,
+  borderColor: '#3E2723',
+  backgroundColor: 'rgba(255,255,255,0.85)',
+},
+
+historyButtonText: {
+  color: '#3E2723',
+  fontSize: 16,
+  fontWeight: '800',
+  letterSpacing: 0.3,
+},
   homeButtonText: {
     color: '#FFF',
     fontSize: 16,
