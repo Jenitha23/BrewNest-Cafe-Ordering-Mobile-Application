@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import com.brewnest.entity.OrderStatus;
 import com.brewnest.entity.PaymentMethod;
+import com.brewnest.entity.PaymentStatus;
 
 import lombok.Builder;
 import lombok.Data;
@@ -40,4 +41,6 @@ public class OrderResponse {
     private String postalCode;
 
     private List<OrderItemResponse> items;
+    
+    private PaymentStatus paymentStatus;
 }
