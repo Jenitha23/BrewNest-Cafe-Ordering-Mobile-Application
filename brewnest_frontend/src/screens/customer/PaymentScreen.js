@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { CartContext } from '../../context/CartContext';
 import { orderApi } from '../../api/orderApi';
+import { paymentApi } from '../../api/paymentApi';
 
 const DELIVERY_FEE = 250;
 
@@ -37,9 +38,11 @@ const PaymentScreen = ({ route, navigation }) => {
   const subtotal = Number(totalAmount || 0);
   const total = subtotal + DELIVERY_FEE;
 
-  const handlePlaceOrder = async () => {
-    try {
-      const order = await orderApi.placeOrder({
+const handlePlaceOrder = async () => {
+  try {
+
+    const order =
+      await orderApi.placeOrder({
         paymentMethod: selectedMethod,
         fullName,
         phoneNumber,
@@ -49,37 +52,74 @@ const PaymentScreen = ({ route, navigation }) => {
         district,
         postalCode,
       });
-      
 
-      await clearCart();
+    if (selectedMethod === 'CARD') {
 
-      Alert.alert(
-  'Success',
-  `Order #${order.orderId} placed successfully`,
-  [
-    {
-      text: 'OK',
-      onPress: () =>
-        navigation.replace('Customer', {
-          screen: 'Orders',
-          params: {
-            screen: 'OrderDetails',
-            params: {
-              orderId: order.orderId,
-            },
-          },
-        }),
-    },
-  ]
-);
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        error?.response?.data?.message ||
-          'Failed to place order'
+      const paymentData =
+        await paymentApi.initPayment(
+          order.orderId
+        );
+
+      const paymentHtml = `
+      <html>
+      <body onload="document.forms[0].submit()">
+
+      <form
+      method="post"
+      action="https://sandbox.payhere.lk/pay/checkout">
+
+      <input type="hidden" name="merchant_id" value="${paymentData.merchantId}" />
+      <input type="hidden" name="return_url" value="${paymentData.returnUrl}" />
+      <input type="hidden" name="cancel_url" value="${paymentData.cancelUrl}" />
+      <input type="hidden" name="notify_url" value="${paymentData.notifyUrl}" />
+      <input type="hidden" name="order_id" value="${paymentData.orderId}" />
+      <input type="hidden" name="items" value="${paymentData.items}" />
+      <input type="hidden" name="currency" value="${paymentData.currency}" />
+      <input type="hidden" name="amount" value="${paymentData.amount}" />
+      <input type="hidden" name="first_name" value="${paymentData.firstName}" />
+      <input type="hidden" name="last_name" value="${paymentData.lastName}" />
+      <input type="hidden" name="email" value="${paymentData.email}" />
+      <input type="hidden" name="phone" value="${paymentData.phone}" />
+      <input type="hidden" name="address" value="${paymentData.address}" />
+      <input type="hidden" name="city" value="${paymentData.city}" />
+      <input type="hidden" name="country" value="${paymentData.country}" />
+      <input type="hidden" name="hash" value="${paymentData.hash}" />
+
+      </form>
+
+      </body>
+      </html>
+      `;
+
+      navigation.navigate(
+        'PayHere',
+        {
+          paymentHtml,
+          orderId: order.orderId,
+        }
       );
+
+      return;
     }
-  };
+
+    await clearCart();
+
+    navigation.replace(
+      'OrderDetails',
+      {
+        orderId: order.orderId,
+      }
+    );
+
+  } catch (error) {
+
+    Alert.alert(
+      'Error',
+      error?.response?.data?.message ||
+      'Failed to place order'
+    );
+  }
+};
 
   const PaymentOption = ({
     title,

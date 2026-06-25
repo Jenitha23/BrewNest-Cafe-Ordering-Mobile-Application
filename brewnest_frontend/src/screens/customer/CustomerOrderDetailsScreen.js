@@ -101,6 +101,25 @@ const CustomerOrderDetailsScreen = ({ route, navigation }) => {
             <Text style={styles.infoLabel}>Payment Method</Text>
             <Text style={styles.infoValue}>{order.paymentMethod}</Text>
           </View>
+          <View style={styles.infoRow}>
+  <Text style={styles.infoLabel}>
+    Payment Status
+  </Text>
+
+  <Text
+    style={[
+      styles.infoValue,
+      {
+        color:
+          order.paymentStatus === 'PAID'
+            ? 'green'
+            : 'orange',
+      },
+    ]}
+  >
+    {order.paymentStatus}
+  </Text>
+</View>
 
           {/* Total Amount */}
           <View style={styles.infoRow}>

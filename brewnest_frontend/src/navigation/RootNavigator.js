@@ -9,6 +9,7 @@ import AdminNavigator from './AdminNavigator';
 import PaymentScreen from '../screens/customer/PaymentScreen';
 import CheckoutScreen from '../screens/customer/CheckoutScreen';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import PayHereScreen from '../screens/customer/PayHereScreen';
 
 const Stack = createStackNavigator();
 
@@ -39,6 +40,7 @@ const RootNavigator = () => {
       {/* GLOBAL SCREENS (ALWAYS AVAILABLE) */}
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
       <Stack.Screen name="Payment" component={PaymentScreen} />
+      <Stack.Screen name="PayHere" component={PayHereScreen}/>
 
     </Stack.Navigator>
   );
