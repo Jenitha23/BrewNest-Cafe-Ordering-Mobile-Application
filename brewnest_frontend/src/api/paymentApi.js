@@ -1,11 +1,12 @@
 import api from './client';
 
 export const paymentApi = {
-  initPayment: async (orderId) => {
+  initPayment: async (paymentRequest) => {
     const response = await api.post(
-      `/payments/init/${orderId}`
+      '/payments/create',
+      paymentRequest
     );
 
-    return response.data.data;
+    return response.data;
   },
 };

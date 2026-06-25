@@ -15,8 +15,10 @@ import { colors } from '../../theme/colors';
 import { CartContext } from '../../context/CartContext';
 import { orderApi } from '../../api/orderApi';
 import { paymentApi } from '../../api/paymentApi';
+import { AuthContext } from '../../context/AuthContext';
 
 const DELIVERY_FEE = 250;
+
 
 const PaymentScreen = ({ route, navigation }) => {
   const {
@@ -29,6 +31,8 @@ const PaymentScreen = ({ route, navigation }) => {
     postalCode,
   } = route.params;
 
+  const { user } = useContext(AuthContext);
+
   const { totalAmount, clearCart } =
     useContext(CartContext);
 
@@ -38,63 +42,32 @@ const PaymentScreen = ({ route, navigation }) => {
   const subtotal = Number(totalAmount || 0);
   const total = subtotal + DELIVERY_FEE;
 
-const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async () => {
   try {
 
-    const order =
-      await orderApi.placeOrder({
-        paymentMethod: selectedMethod,
-        fullName,
-        phoneNumber,
-        addressLine1,
-        addressLine2,
-        city,
-        district,
-        postalCode,
-      });
+    console.log('Selected Method:', selectedMethod);
 
-    if (selectedMethod === 'CARD') {
+    const order = await orderApi.placeOrder({
+      paymentMethod: selectedMethod,
+      fullName,
+      phoneNumber,
+      addressLine1,
+      addressLine2,
+      city,
+      district,
+      postalCode,
+    });
 
-      const paymentData =
-        await paymentApi.initPayment(
-          order.orderId
-        );
+    console.log('ORDER CREATED:', order);
 
-      const paymentHtml = `
-      <html>
-      <body onload="document.forms[0].submit()">
+    // CASH PAYMENT
+    if (selectedMethod === 'CASH') {
 
-      <form
-      method="post"
-      action="https://sandbox.payhere.lk/pay/checkout">
+      await clearCart();
 
-      <input type="hidden" name="merchant_id" value="${paymentData.merchantId}" />
-      <input type="hidden" name="return_url" value="${paymentData.returnUrl}" />
-      <input type="hidden" name="cancel_url" value="${paymentData.cancelUrl}" />
-      <input type="hidden" name="notify_url" value="${paymentData.notifyUrl}" />
-      <input type="hidden" name="order_id" value="${paymentData.orderId}" />
-      <input type="hidden" name="items" value="${paymentData.items}" />
-      <input type="hidden" name="currency" value="${paymentData.currency}" />
-      <input type="hidden" name="amount" value="${paymentData.amount}" />
-      <input type="hidden" name="first_name" value="${paymentData.firstName}" />
-      <input type="hidden" name="last_name" value="${paymentData.lastName}" />
-      <input type="hidden" name="email" value="${paymentData.email}" />
-      <input type="hidden" name="phone" value="${paymentData.phone}" />
-      <input type="hidden" name="address" value="${paymentData.address}" />
-      <input type="hidden" name="city" value="${paymentData.city}" />
-      <input type="hidden" name="country" value="${paymentData.country}" />
-      <input type="hidden" name="hash" value="${paymentData.hash}" />
-
-      </form>
-
-      </body>
-      </html>
-      `;
-
-      navigation.navigate(
-        'PayHere',
+      navigation.replace(
+        'OrderDetails',
         {
-          paymentHtml,
           orderId: order.orderId,
         }
       );
@@ -102,16 +75,68 @@ const handlePlaceOrder = async () => {
       return;
     }
 
-    await clearCart();
+    // CARD PAYMENT
+    const paymentData =
+  await paymentApi.initPayment({
+    orderId: String(order.orderId),
+    amount: total,
+    firstName: fullName,
+    lastName: '',
+    email: user.email,
+    phone: phoneNumber,
+  });
+      console.log('ENTERING CARD PAYMENT FLOW');
 
-    navigation.replace(
-      'OrderDetails',
+    console.log(
+      'PAYMENT DATA:',
+      paymentData
+    );
+
+    const paymentHtml = `
+      <html>
+      <body onload="document.forms[0].submit()">
+
+      <form
+        method="post"
+        action="https://sandbox.payhere.lk/pay/checkout">
+
+        <input type="hidden" name="merchant_id" value="${paymentData.merchantId}" />
+        <input type="hidden" name="return_url" value="${paymentData.returnUrl}" />
+        <input type="hidden" name="cancel_url" value="${paymentData.cancelUrl}" />
+        <input type="hidden" name="notify_url" value="${paymentData.notifyUrl}" />
+        <input type="hidden" name="order_id" value="${paymentData.orderId}" />
+        <input type="hidden" name="items" value="${paymentData.items}" />
+        <input type="hidden" name="currency" value="${paymentData.currency}" />
+        <input type="hidden" name="amount" value="${paymentData.amount}" />
+        <input type="hidden" name="first_name" value="${paymentData.firstName}" />
+        <input type="hidden" name="last_name" value="${paymentData.lastName}" />
+        <input type="hidden" name="email" value="${paymentData.email}" />
+        <input type="hidden" name="phone" value="${paymentData.phone}" />
+        <input type="hidden" name="address" value="${paymentData.address}" />
+        <input type="hidden" name="city" value="${paymentData.city}" />
+        <input type="hidden" name="country" value="${paymentData.country}" />
+        <input type="hidden" name="hash" value="${paymentData.hash}" />
+
+      </form>
+
+      </body>
+      </html>
+    `;
+
+    navigation.navigate(
+      'PayHere',
       {
+        paymentHtml,
         orderId: order.orderId,
       }
     );
 
   } catch (error) {
+
+    console.log(
+      'PAYMENT ERROR:',
+      error?.response?.data || error
+    );
 
     Alert.alert(
       'Error',
