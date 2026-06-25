@@ -18,6 +18,7 @@ import CustomerOrdersScreen from '../screens/customer/CustomerOrdersScreen';
 import CustomerOrderDetailsScreen from '../screens/customer/CustomerOrderDetailsScreen';
 import CheckoutScreen from '../screens/customer/CheckoutScreen';
 import PaymentScreen from '../screens/customer/PaymentScreen';
+import PayHereScreen from '../screens/customer/PayHereScreen';
 
 
 const Tab = createBottomTabNavigator();
@@ -30,6 +31,7 @@ const HomeStack = () => {
       <Stack.Screen name="MenuItemDetails" component={MenuItemDetailsScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen}/>
+      <Stack.Screen name="PayHere"  component={PayHereScreen}/>
       <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );
@@ -42,6 +44,7 @@ const MenuStack = () => {
       <Stack.Screen name="MenuItemDetails" component={MenuItemDetailsScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen}/>
+      <Stack.Screen name="PayHere"  component={PayHereScreen}/>
     </Stack.Navigator>
   );
 };
@@ -69,6 +72,7 @@ const ProfileStack = () => {
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen}/>
+      <Stack.Screen name="PayHere"  component={PayHereScreen}/>
     </Stack.Navigator>
   );
 };
