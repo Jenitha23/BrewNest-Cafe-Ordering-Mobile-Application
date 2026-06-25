@@ -9,7 +9,7 @@ import com.brewnest.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -27,6 +27,7 @@ public class PaymentController {
         System.out.println("PayHere Notification Received");
         return "OK";
     }
+ 
 
     
 }
