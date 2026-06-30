@@ -37,7 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
         .merchantId(merchantId) 
         .returnUrl("https://www.google.com") 
         .cancelUrl("https://www.google.com") 
-        .notifyUrl("http://YOUR_PC_IP:8080/api/payments/notify") 
+        .notifyUrl("http://192.168.1.5:8080/payments/notify") 
         .orderId(request.getOrderId()) 
         .items("BrewNest Order") 
         .currency("LKR") 
@@ -53,17 +53,31 @@ public class PaymentServiceImpl implements PaymentService {
         .build(); 
     }
 
-    private String generateHash( 
-        String merchantId, 
-        String orderId, 
-        String amount, 
-        String currency 
-    ) {
+    private String generateHash(
+        String merchantId,
+        String orderId,
+        String amount,
+        String currency
+) {
 
-        String md5Secret = md5(merchantSecret).toUpperCase();
-        String raw = merchantId + orderId + amount + currency + md5Secret;
-        return md5(raw).toUpperCase();
-    }
+    String md5Secret = md5(merchantSecret).toUpperCase();
+
+    System.out.println("merchantId = [" + merchantId + "]");
+    System.out.println("merchantSecret = [" + merchantSecret + "]");
+    System.out.println("md5Secret = [" + md5Secret + "]");
+    System.out.println("orderId = [" + orderId + "]");
+    System.out.println("amount = [" + amount + "]");
+
+    String raw = merchantId + orderId + amount + currency + md5Secret;
+
+    System.out.println("RAW = [" + raw + "]");
+
+    String hash = md5(raw).toUpperCase();
+
+    System.out.println("HASH = [" + hash + "]");
+
+    return hash;
+}
     private String md5(String data) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5"); 
