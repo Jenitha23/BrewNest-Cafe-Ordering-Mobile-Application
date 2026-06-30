@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { AuthContext } from '../../context/AuthContext';
+import AdminScreenBackground from './AdminScreenBackground';
 
 const AdminDashboard = ({ navigation }) => {
   const { user, logout } = useContext(AuthContext);
@@ -62,7 +63,53 @@ const AdminDashboard = ({ navigation }) => {
     );
   };
 
+  const quickAccessItems = [
+    {
+      key: 'menu',
+      label: 'Menu Items',
+      description: 'Add & edit items',
+      icon: 'food',
+      route: 'AdminMenu',
+    },
+    {
+      key: 'categories',
+      label: 'Categories',
+      description: 'Organize menu',
+      icon: 'shape',
+      route: 'AdminCategories',
+    },
+    {
+      key: 'availability',
+      label: 'Availability',
+      description: 'Stock control',
+      icon: 'toggle-switch',
+      route: 'AdminMenu',
+    },
+    {
+      key: 'users',
+      label: 'Users',
+      description: 'Manage accounts',
+      icon: 'account-group',
+      route: 'AdminUsers',
+    },
+    {
+      key: 'orders',
+      label: 'Orders',
+      description: 'Track & update',
+      icon: 'clipboard-list',
+      route: 'AdminOrders',
+    },
+    {
+      key: 'settings',
+      label: 'Settings',
+      description: 'Preferences',
+      icon: 'cog-outline',
+      route: 'AdminSettings',
+    },
+  ];
+
   return (
+    <AdminScreenBackground>
     <SafeAreaView style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -121,14 +168,18 @@ const AdminDashboard = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Stats */}
+        {/* Stats - tappable shortcuts */}
 
         <Text style={styles.sectionTitle}>
           Overview
         </Text>
 
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
+          <TouchableOpacity
+            style={styles.statCard}
+            onPress={() => navigation.navigate('AdminMenu')}
+            activeOpacity={0.7}
+          >
             <Icon
               name="food"
               size={28}
@@ -142,13 +193,17 @@ const AdminDashboard = ({ navigation }) => {
             <Text style={styles.statLabel}>
               Menu Items
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.statCard}>
+          <TouchableOpacity
+            style={styles.statCard}
+            onPress={() => navigation.navigate('AdminMenu')}
+            activeOpacity={0.7}
+          >
             <Icon
               name="check-circle"
               size={28}
-              color="#2E7D32"
+              color={colors.success}
             />
 
             <Text style={styles.statValue}>
@@ -158,13 +213,17 @@ const AdminDashboard = ({ navigation }) => {
             <Text style={styles.statLabel}>
               Available
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.statCard}>
+          <TouchableOpacity
+            style={styles.statCard}
+            onPress={() => navigation.navigate('AdminMenu')}
+            activeOpacity={0.7}
+          >
             <Icon
               name="close-circle"
               size={28}
-              color="#D32F2F"
+              color={colors.error}
             />
 
             <Text style={styles.statValue}>
@@ -174,13 +233,17 @@ const AdminDashboard = ({ navigation }) => {
             <Text style={styles.statLabel}>
               Out Of Stock
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.statCard}>
+          <TouchableOpacity
+            style={styles.statCard}
+            onPress={() => navigation.navigate('AdminCategories')}
+            activeOpacity={0.7}
+          >
             <Icon
               name="shape"
               size={28}
-              color="#6A1B9A"
+              color={colors.accent}
             />
 
             <Text style={styles.statValue}>
@@ -190,138 +253,51 @@ const AdminDashboard = ({ navigation }) => {
             <Text style={styles.statLabel}>
               Categories
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-  style={styles.menuCard}
-  onPress={() => navigation.navigate('AdminOrders')}
->
-  <View style={styles.iconBox}>
-    <Icon
-      name="clipboard-list"
-      size={30}
-      color={colors.primary}
-    />
-  </View>
 
-  <View style={styles.cardContent}>
-    <Text style={styles.cardTitle}>
-      Order Management
-    </Text>
-
-    <Text style={styles.cardDescription}>
-      View and update customer orders
-    </Text>
-  </View>
-
-  <Icon
-    name="chevron-right"
-    size={24}
-    color={colors.textLight}
-  />
-</TouchableOpacity>
-
-        {/* Management */}
+        {/* Quick Access Grid */}
 
         <Text style={styles.sectionTitle}>
-          Management
+          Quick Access
         </Text>
 
-        <TouchableOpacity
-          style={styles.menuCard}
-          onPress={() => navigation.navigate('AdminMenu')}
-        >
-          <View style={styles.iconBox}>
-            <Icon
-              name="food"
-              size={30}
-              color={colors.primary}
-            />
-          </View>
+        <View style={styles.gridContainer}>
+          {quickAccessItems.map((item) => (
+            <TouchableOpacity
+              key={item.key}
+              style={styles.gridTile}
+              onPress={() => navigation.navigate(item.route)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.gridIconBox}>
+                <Icon
+                  name={item.icon}
+                  size={26}
+                  color={colors.primary}
+                />
+              </View>
 
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>
-              Menu Management
-            </Text>
+              <Text style={styles.gridLabel}>
+                {item.label}
+              </Text>
 
-            <Text style={styles.cardDescription}>
-              Add, update and delete menu items
-            </Text>
-          </View>
-
-          <Icon
-            name="chevron-right"
-            size={24}
-            color={colors.textLight}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuCard}
-          onPress={() => navigation.navigate('AdminCategories')}
-        >
-          <View style={styles.iconBox}>
-            <Icon
-              name="shape"
-              size={30}
-              color={colors.primary}
-            />
-          </View>
-
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>
-              Category Management
-            </Text>
-
-            <Text style={styles.cardDescription}>
-              Create and manage categories
-            </Text>
-          </View>
-
-          <Icon
-            name="chevron-right"
-            size={24}
-            color={colors.textLight}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuCard}
-          onPress={() => navigation.navigate('AdminMenu')}
-        >
-          <View style={styles.iconBox}>
-            <Icon
-              name="toggle-switch"
-              size={30}
-              color={colors.primary}
-            />
-          </View>
-
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>
-              Availability Control
-            </Text>
-
-            <Text style={styles.cardDescription}>
-              Manage stock availability
-            </Text>
-          </View>
-
-          <Icon
-            name="chevron-right"
-            size={24}
-            color={colors.textLight}
-          />
-        </TouchableOpacity>
+              <Text style={styles.gridDescription} numberOfLines={1}>
+                {item.description}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
+    </AdminScreenBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
 
   header: {
@@ -354,6 +330,8 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 15,
     backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -368,7 +346,7 @@ const styles = StyleSheet.create({
   },
 
   bannerLabel: {
-    color: '#F5D8BC',
+    color: colors.secondaryLight,
     fontWeight: '700',
   },
 
@@ -380,7 +358,7 @@ const styles = StyleSheet.create({
   },
 
   bannerText: {
-    color: '#F7E8DA',
+    color: colors.secondaryLight,
     marginTop: 6,
     lineHeight: 20,
   },
@@ -412,6 +390,8 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 14,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 
   statValue: {
@@ -426,39 +406,47 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  menuCard: {
-    marginHorizontal: 20,
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
+  gridContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
 
-  iconBox: {
-    width: 55,
-    height: 55,
-    borderRadius: 15,
-    backgroundColor: '#F8E8D4',
+  gridTile: {
+    width: '31%',
+    backgroundColor: colors.surface,
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    marginBottom: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
+  gridIconBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: colors.secondaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
   },
 
-  cardContent: {
-    flex: 1,
-    marginLeft: 15,
-  },
-
-  cardTitle: {
-    fontSize: 16,
+  gridLabel: {
+    fontSize: 12,
     fontWeight: '900',
     color: colors.textPrimary,
+    textAlign: 'center',
   },
 
-  cardDescription: {
+  gridDescription: {
+    fontSize: 10,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 3,
+    textAlign: 'center',
   },
 });
 

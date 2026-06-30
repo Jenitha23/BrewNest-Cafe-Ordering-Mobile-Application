@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AdminScreenBackground from './AdminScreenBackground';
 
 const AdminSettingsScreen = ({ navigation }) => {
   const [emailNotifications, setEmailNotifications] = React.useState(true);
@@ -43,6 +44,7 @@ const AdminSettingsScreen = ({ navigation }) => {
   ];
 
   return (
+    <AdminScreenBackground>
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {settingsSections.map((section, sectionIndex) => (
@@ -80,13 +82,14 @@ const AdminSettingsScreen = ({ navigation }) => {
         ))}
       </ScrollView>
     </SafeAreaView>
+    </AdminScreenBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   section: {
     marginTop: 20,

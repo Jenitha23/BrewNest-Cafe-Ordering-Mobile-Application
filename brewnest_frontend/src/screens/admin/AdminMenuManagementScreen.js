@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { getImageUrl, menuApi } from '../../api/menuApi';
+import AdminScreenBackground from './AdminScreenBackground';
 
 const statuses = ['ALL', 'AVAILABLE', 'OUT_OF_STOCK', 'HIDDEN'];
 
@@ -101,6 +102,7 @@ const AdminMenuManagementScreen = ({ navigation }) => {
   };
 
   return (
+    <AdminScreenBackground>
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
         <View style={styles.header}>
@@ -313,6 +315,7 @@ const AdminMenuManagementScreen = ({ navigation }) => {
         )}
       </View>
     </SafeAreaView>
+    </AdminScreenBackground>
   );
 };
 
@@ -321,7 +324,7 @@ const PHONE_WIDTH = 460;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
 
   screen: {
@@ -332,7 +335,7 @@ const styles = StyleSheet.create({
     padding: 18,
     paddingBottom: 18,
     paddingTop: 12,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
 
   header: {
@@ -458,7 +461,7 @@ activeFilterText: {
     width: 82,
     height: 92,
     borderRadius: 18,
-    backgroundColor: '#F8E8D4',
+    backgroundColor: colors.secondaryLight,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -582,7 +585,7 @@ activeFilterText: {
   },
 
   statusButton: {
-    backgroundColor: '#F8E8D4',
+    backgroundColor: colors.secondaryLight,
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 9,

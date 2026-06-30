@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { menuApi } from '../../api/menuApi';
+import AdminScreenBackground from './AdminScreenBackground';
 
 const AdminCategoryManagementScreen = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
@@ -108,6 +109,7 @@ const AdminCategoryManagementScreen = ({ navigation }) => {
   };
 
   return (
+    <AdminScreenBackground>
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
         <View style={styles.header}>
@@ -197,6 +199,7 @@ const AdminCategoryManagementScreen = ({ navigation }) => {
         )}
       </View>
     </SafeAreaView>
+    </AdminScreenBackground>
   );
 };
 
@@ -205,7 +208,7 @@ const PHONE_WIDTH = 430;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
 
   screen: {
@@ -240,7 +243,7 @@ const styles = StyleSheet.create({
   },
 
   formCard: {
-    backgroundColor: '#F8E8D4',
+    backgroundColor: colors.secondaryLight,
     borderRadius: 22,
     padding: 16,
     borderWidth: 1,
@@ -325,7 +328,7 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 23,
-    backgroundColor: '#F8E8D4',
+    backgroundColor: colors.secondaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,

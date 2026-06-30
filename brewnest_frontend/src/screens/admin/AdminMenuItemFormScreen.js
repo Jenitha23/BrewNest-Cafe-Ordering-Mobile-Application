@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { getImageUrl, menuApi } from '../../api/menuApi';
+import AdminScreenBackground from './AdminScreenBackground';
 
 const availabilityOptions = ['AVAILABLE', 'OUT_OF_STOCK', 'HIDDEN'];
 
@@ -170,6 +171,7 @@ const AdminMenuItemFormScreen = ({ navigation, route }) => {
   const previewImageUri = selectedImage?.uri || getImageUrl(formData.imageUrl);
 
   return (
+    <AdminScreenBackground>
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
         <View style={styles.header}>
@@ -308,6 +310,7 @@ const AdminMenuItemFormScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
     </SafeAreaView>
+    </AdminScreenBackground>
   );
 };
 
@@ -316,7 +319,7 @@ const PHONE_WIDTH = 430;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
 
   screen: {
@@ -353,7 +356,7 @@ const styles = StyleSheet.create({
   imagePicker: {
     height: 190,
     borderRadius: 26,
-    backgroundColor: '#F8E8D4',
+    backgroundColor: colors.secondaryLight,
     marginTop: 20,
     overflow: 'hidden',
     borderWidth: 1,
@@ -393,7 +396,7 @@ const styles = StyleSheet.create({
   },
 
   formCard: {
-    backgroundColor: '#F8E8D4',
+    backgroundColor: colors.secondaryLight,
     borderRadius: 24,
     padding: 16,
     borderWidth: 1,

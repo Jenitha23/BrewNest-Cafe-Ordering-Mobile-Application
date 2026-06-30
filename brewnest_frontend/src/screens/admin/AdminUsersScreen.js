@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AdminScreenBackground from './AdminScreenBackground';
 
 const AdminUsersScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +28,7 @@ const AdminUsersScreen = ({ navigation }) => {
   );
 
   return (
+    <AdminScreenBackground>
     <SafeAreaView style={styles.container}>
       <View style={styles.searchContainer}>
         <Icon name="magnify" size={20} color={colors.textLight} style={styles.searchIcon} />
@@ -84,13 +86,14 @@ const AdminUsersScreen = ({ navigation }) => {
         <Icon name="plus" size={24} color={colors.textWhite} />
       </TouchableOpacity>
     </SafeAreaView>
+    </AdminScreenBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   searchContainer: {
     flexDirection: 'row',
