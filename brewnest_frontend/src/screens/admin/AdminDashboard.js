@@ -12,37 +12,53 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../theme/colors';
 import { AuthContext } from '../../context/AuthContext';
 import AdminScreenBackground from './AdminScreenBackground';
+import { menuApi } from '../../api/menuApi';
+import { orderApi } from '../../api/orderApi';
 
 const AdminDashboard = ({ navigation }) => {
   const { user, logout } = useContext(AuthContext);
 
   const [dashboardStats, setDashboardStats] = useState({
-    totalItems: 0,
-    availableItems: 0,
-    unavailableItems: 0,
-    categories: 0,
-  });
+  totalItems: 0,
+  availableItems: 0,
+  unavailableItems: 0,
+  categories: 0,
+  orders: 0,
+});
 
   useEffect(() => {
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
-    try {
-      /**
-       * Replace with actual backend API calls later
-       */
+  try {
 
-      setDashboardStats({
-        totalItems: 15,
-        availableItems: 12,
-        unavailableItems: 3,
-        categories: 5,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    const [menuItems, categories, orders] = await Promise.all([
+      menuApi.getAdminMenuItems(),
+      menuApi.getAdminCategories(),
+      orderApi.getAllOrders(),
+    ]);
+
+    const availableItems = menuItems.filter(
+      item => item.availabilityStatus === 'AVAILABLE'
+    ).length;
+
+    const unavailableItems = menuItems.filter(
+      item => item.availabilityStatus === 'OUT_OF_STOCK'
+    ).length;
+
+    setDashboardStats({
+      totalItems: menuItems.length,
+      availableItems,
+      unavailableItems,
+      categories: categories.length,
+      orders: orders.length,
+    });
+
+  } catch (error) {
+    console.log('Dashboard Error:', error);
+  }
+};
 
   const handleLogout = () => {
     Alert.alert(
@@ -254,6 +270,24 @@ const AdminDashboard = ({ navigation }) => {
               Categories
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+  style={styles.statCard}
+  onPress={() => navigation.navigate('AdminOrders')}
+>
+  <Icon
+    name="clipboard-list"
+    size={28}
+    color={colors.primary}
+  />
+
+  <Text style={styles.statValue}>
+    {dashboardStats.orders}
+  </Text>
+
+  <Text style={styles.statLabel}>
+    Orders
+  </Text>
+</TouchableOpacity>
         </View>
 
         {/* Quick Access Grid */}
